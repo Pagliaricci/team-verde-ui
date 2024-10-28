@@ -1,6 +1,7 @@
 import {fetchAllUserSnippets} from "../../hooks/fetchAllUserSnippets.ts";
-import { PaginatedSnippets, Snippet} from "../../utils/snippet.ts";
+import {CreateSnippet, PaginatedSnippets, Snippet} from "../../utils/snippet.ts";
 import {fetchSnippetById} from "../../hooks/fetchSnippetById.ts";
+import {createSnippetFunction} from "../../hooks/createSnippetFunction.ts";
 // import {PaginatedUsers} from "../users.ts";
 // import {Rule} from "../../types/Rule.ts";
 // import {TestCase} from "../../types/TestCase.ts";
@@ -9,6 +10,15 @@ import {fetchSnippetById} from "../../hooks/fetchSnippetById.ts";
 
 const DELAY: number = 1000
 export class SnippetManagerService {
+
+    public  async  createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
+        return await createSnippetFunction(createSnippet, token) as Snippet;
+    }
+
     public static async fetchAllUserSnippets(id: string): Promise<Snippet[] | []> {
         try{
             const token = localStorage.getItem("token");

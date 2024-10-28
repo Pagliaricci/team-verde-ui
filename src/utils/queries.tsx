@@ -8,6 +8,7 @@ import {FileType} from "../types/FileType.ts";
 import {Rule} from "../types/Rule.ts";
 import {useEffect} from "react";
 import {useAuth0} from "@auth0/auth0-react";
+import {SnippetManagerService} from "./teamVerdeOperations/SnippetManagerService.ts";
 
 
 export const useSnippetsOperations = () => {
@@ -20,6 +21,7 @@ export const useSnippetsOperations = () => {
     });}
 
 const snippetOperations: SnippetOperations = new FakeSnippetOperations(); // TODO: Replace with your implementation
+const realSnippetOperations: SnippetManagerService = new SnippetManagerService();
 
 export const useGetSnippets = (page: number = 0, pageSize: number = 10, snippetName?: string) => {
     const useSnippetsOperations1 = useSnippetsOperations();
@@ -35,7 +37,7 @@ export const useGetSnippetById = (id: string) => {
 export const useCreateSnippet = ({onSuccess}: {
     onSuccess: () => void
 }): UseMutationResult<Snippet, Error, CreateSnippet> => {
-    return useMutation<Snippet, Error, CreateSnippet>(createSnippet => snippetOperations.createSnippet(createSnippet), {onSuccess});
+    return useMutation<Snippet, Error, CreateSnippet>(createSnippet => realSnippetOperations.createSnippet(createSnippet), {onSuccess});
 };
 
 export const useUpdateSnippetById = ({onSuccess}: { onSuccess: () => void }): UseMutationResult<Snippet, Error, {

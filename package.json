@@ -14,11 +14,13 @@
     "cypress": "cypress open"
   },
   "dependencies": {
+    "@auth0/auth0-react": "^2.2.4",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.15.12",
     "@mui/material": "^5.15.12",
     "@types/prismjs": "^1.26.3",
+    "auth0": "^4.10.0",
     "auto-bind": "^5.0.1",
     "axios": "^1.6.7",
     "cypress": "^13.8.1",

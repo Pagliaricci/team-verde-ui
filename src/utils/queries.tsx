@@ -6,10 +6,23 @@ import {FakeSnippetOperations} from "./mock/fakeSnippetOperations.ts";
 import {TestCase} from "../types/TestCase.ts";
 import {FileType} from "../types/FileType.ts";
 import {Rule} from "../types/Rule.ts";
+import {useEffect} from "react";
+import {useAuth0} from "@auth0/auth0-react";
+
+
+export const useSnippetsOperations = () => {
+    const { getAccessTokenSilently } = useAuth0()
+    useEffect(() => {
+        getAccessTokenSilently()
+            .then(token => {
+                console.log(token)
+            })
+    });}
 
 const snippetOperations: SnippetOperations = new FakeSnippetOperations(); // TODO: Replace with your implementation
 
 export const useGetSnippets = (page: number = 0, pageSize: number = 10, snippetName?: string) => {
+    const useSnippetsOperations1 = useSnippetsOperations();
     return useQuery<PaginatedSnippets, Error>(['listSnippets', page, pageSize, snippetName], () => snippetOperations.listSnippetDescriptors(page, pageSize, snippetName));
 };
 

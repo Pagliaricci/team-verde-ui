@@ -1,7 +1,9 @@
 import {fetchAllUserSnippets} from "../../hooks/fetchAllUserSnippets.ts";
-import {CreateSnippet, PaginatedSnippets, Snippet} from "../../utils/snippet.ts";
+import {CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet} from "../../utils/snippet.ts";
 import {fetchSnippetById} from "../../hooks/fetchSnippetById.ts";
 import {createSnippetFunction} from "../../hooks/createSnippetFunction.ts";
+import {updateSnippetFunction} from "../../hooks/updateSnippetFunction.ts";
+import axios from "axios";
 // import {PaginatedUsers} from "../users.ts";
 // import {Rule} from "../../types/Rule.ts";
 // import {TestCase} from "../../types/TestCase.ts";
@@ -11,7 +13,7 @@ import {createSnippetFunction} from "../../hooks/createSnippetFunction.ts";
 const DELAY: number = 1000
 export class SnippetManagerService {
 
-    public  async  createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
+     async  createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error("No token found");
@@ -32,29 +34,19 @@ export class SnippetManagerService {
             return [];
         }
     }
-    public static async fetchSnippetById(id: string): Promise<Snippet | null> {
+
+     async fetchSnippetById(id: string): Promise<Snippet | []> {
         try {
             const token = localStorage.getItem("token");
             if (!token) {
                 throw new Error("No token found");
             }
-            return await fetchSnippetById(id, token);
+            return await fetchSnippetById(id, token) as Snippet;
         } catch (error) {
             console.error(error);
-            return null;
+            return [];
         }
     }
-    //TODO
-    public static async shareSnippet(snippetId: string): Promise<Snippet> {
-        return new Promise(resolve => {
-            // @ts-expect-error, it will always find it in the fake store
-            setTimeout(() => resolve(this.fakeStore.getSnippetById(snippetId)), DELAY)
-        })
-    }
-    //TODO
-    //createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
-    //    return new Promise(resolve => {
-    //}
 
     async listSnippetDescriptors(page: number, pageSize: number): Promise<PaginatedSnippets> {
         const userId = localStorage.getItem("userId");
@@ -72,21 +64,40 @@ export class SnippetManagerService {
             setTimeout(() => resolve(response), DELAY)
         })
     }
-    //TODO
-    // updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
+
+    async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
+        return await updateSnippetFunction(id, updateSnippet, token) as Snippet;
+    }
+
+    async deleteSnippet(id: string): Promise<string> {
+        try {
+            await axios.post(`/snippets/delete/${id}`);
+            return `Successfully deleted snippet of id: ${id}`;
+        } catch (error) {
+            console.error(error);
+            return `Snippet of id: ${id} could not be deleted`;
+        }
+    }
+
+    // //TODO
+    // public static async shareSnippet(snippetId: string): Promise<Snippet> {
     //     return new Promise(resolve => {
-    //         setTimeout(() => resolve(this.fakeStore.updateSnippet(id, updateSnippet)), DELAY)
+    //         // @ts-expect-error, it will always find it in the fake store
+    //         setTimeout(() => resolve(this.fakeStore.getSnippetById(snippetId)), DELAY)
     //     })
     // }
 
-    //TODO
+
     // getUserFriends(name: string = "", page: number = 1, pageSize: number = 10): Promise<PaginatedUsers> {
     //     return new Promise(resolve => {
     //         setTimeout(() => resolve(this.fakeStore.getUserFriends(name,page,pageSize)), DELAY)
     //     })
     // }
     //
-
     //
     // getFormatRules(): Promise<Rule[]> {
     //     return new Promise(resolve => {
@@ -130,11 +141,6 @@ export class SnippetManagerService {
     //     })
     // }
     //
-    // deleteSnippet(id: string): Promise<string> {
-    //     return new Promise(resolve => {
-    //         setTimeout(() => resolve(this.fakeStore.deleteSnippet(id)), DELAY)
-    //     })
-    // }
     //
     // getFileTypes(): Promise<FileType[]> {
     //     return new Promise(resolve => {

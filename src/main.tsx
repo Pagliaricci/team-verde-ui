@@ -13,7 +13,7 @@ createRoot(document.getElementById('root')!).render(
             clientId={import.meta.env.VITE_AUTH0_CLIENT_ID ?? ""}
             authorizationParams={{
                 redirect_uri: window.location.origin,
-                audience: "https://snippets-search/"
+                audience: "https://snippet-service-api"
             }}>
             <PaginationProvider>
                 <SnackbarProvider>

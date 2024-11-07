@@ -16,6 +16,7 @@ export const useSnippetsOperations = () => {
     useEffect(() => {
         getAccessTokenSilently()
             .then(token => {
+                localStorage.setItem('token', token)
                 console.log(token)
             })
     });}
@@ -26,11 +27,13 @@ const realSnippetOperations: SnippetManagerService = new SnippetManagerService()
 
 //cambiar por el nuestro
 export const useGetSnippets = (page: number = 0, pageSize: number = 10, snippetName?: string) => {
+    const snippetOperations = useSnippetsOperations()
     return useQuery<PaginatedSnippets, Error>(['listSnippets', page, pageSize, snippetName], () => snippetOperations.listSnippetDescriptors(page, pageSize, snippetName));
 };
 
 //ya tiene el nuestro (falta integrar y probar)
 export const useGetSnippetById = (id: string) => {
+    const snippetOperations = useSnippetsOperations()
     return useQuery<Snippet | [], Error>(['snippet', id], () => realSnippetOperations.fetchSnippetById(id), {
         enabled: !!id, // This query will not execute until the id is provided
     });
@@ -75,7 +78,6 @@ export const useShareSnippet = () => {
         ({snippetId, userId}) => snippetOperations.shareSnippet(snippetId, userId)
     );
 };
-
 
 export const useGetTestCases = (snippetId: string) => {
     return useQuery<TestCase[] | undefined, Error>('testCases', () => snippetOperations.getTestCases(snippetId), {});

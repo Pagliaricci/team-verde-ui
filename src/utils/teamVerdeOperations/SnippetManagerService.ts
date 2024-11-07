@@ -13,6 +13,7 @@ import axios from "axios";
 const DELAY: number = 1000
 export class SnippetManagerService {
 
+
      async  createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -83,13 +84,16 @@ export class SnippetManagerService {
         }
     }
 
-    ////TODO
-    // public static async shareSnippet(snippetId: string): Promise<Snippet> {
-    //     return new Promise(resolve => {
-    //         // @ts-expect-error, it will always find it in the fake store
-    //         setTimeout(() => resolve(this.fakeStore.getSnippetById(snippetId)), DELAY)
-    //     })
-    // }
+    async shareSnippet(snippetId: string,userId: string ): Promise<string> {
+         try {
+             const request = {userId: userId, snippetId: snippetId};
+             await axios.post(`/snippets/share/${request}`);
+             return `Successfully shared snippet of id: ${snippetId}`;
+         } catch (error) {
+             console.error(error);
+             return `Snippet of id: ${snippetId} could not be shared`;
+         }
+     }
 
 
     // getUserFriends(name: string = "", page: number = 1, pageSize: number = 10): Promise<PaginatedUsers> {

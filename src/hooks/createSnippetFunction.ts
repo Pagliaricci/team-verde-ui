@@ -3,13 +3,11 @@ import {CreateSnippet, Snippet} from '../utils/snippet';
 
 export const createSnippetFunction = async (snippet: CreateSnippet, token: string): Promise<Snippet | null> => {
     try {
-        const response = await axios.post('/api/snippets/create', snippet, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-        },
-            }
-        );
+        console.log(snippet);
+        const response = await axios.post('http://localhost:8083/snippets/create', snippet);
+        console.log("SHULULU");
+        console.log(response.data);
+        console.log(token);
         return response.data as Snippet;
     } catch (error) {
         console.error(error);

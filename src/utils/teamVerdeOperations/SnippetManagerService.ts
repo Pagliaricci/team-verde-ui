@@ -10,6 +10,8 @@ import axios from "axios";
 // import {TestCaseResult} from "../queries.tsx";
 // import {FileType} from "../../types/FileType.ts";
 
+import {Rule} from "../../types/Rule.ts";
+
 const DELAY: number = 1000
 export class SnippetManagerService {
 
@@ -94,6 +96,43 @@ export class SnippetManagerService {
              return `Snippet of id: ${snippetId} could not be shared`;
          }
      }
+    modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
+        const userId = "2"; // Hardcodeado temporalmente
+
+        return new Promise((resolve, reject) => {
+            axios.post('http://localhost:8080/saveLintingRules', {
+                userId: userId,
+                lintingRules: newRules
+            })
+                .then(response => {
+                    console.log('Respuesta del backend:', response.data);
+                    resolve(response.data); // Resuelve con la respuesta del backend
+                })
+                .catch(error => {
+                    console.error('Error al guardar las reglas de linting:', error);
+                    reject(error); // Rechaza la promesa en caso de error
+                });
+        });
+    }
+
+    modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
+        const userId = "2"; // Hardcodeado temporalmente
+
+        return new Promise((resolve, reject) => {
+            axios.post('http://localhost:8080/saveFormatRules', {
+                userId: userId,
+                lintingRules: newRules
+            })
+                .then(response => {
+                    console.log('Respuesta del backend:', response.data);
+                    resolve(response.data); // Resuelve con la respuesta del backend
+                })
+                .catch(error => {
+                    console.error('Error al guardar las reglas de linting:', error);
+                    reject(error); // Rechaza la promesa en caso de error
+                });
+        });
+    }
 
 
     // getUserFriends(name: string = "", page: number = 1, pageSize: number = 10): Promise<PaginatedUsers> {
@@ -157,10 +196,5 @@ export class SnippetManagerService {
     //         setTimeout(() => resolve(this.fakeStore.modifyFormattingRule(newRules)), DELAY)
     //     })
     // }
-    //
-    // modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
-    //     return new Promise(resolve => {
-    //         setTimeout(() => resolve(this.fakeStore.modifyLintingRule(newRules)), DELAY)
-    //     })
-    // }
+
 }

@@ -1,10 +1,18 @@
 import axios from 'axios';
-import {CreateSnippet, Snippet} from '../utils/snippet';
+import { CreateSnippet, Snippet } from '../utils/snippet';
 
 export const createSnippetFunction = async (snippet: CreateSnippet, token: string): Promise<Snippet | null> => {
     try {
         console.log(snippet);
-        const response = await axios.post('http://localhost:8083/snippets/create', snippet);
+        const response = await axios.post(
+            'http://localhost:8083/snippets/create',
+            snippet,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
         console.log("SHULULU");
         console.log(response.data);
         console.log(token);

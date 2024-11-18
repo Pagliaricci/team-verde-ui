@@ -52,11 +52,11 @@ export class SnippetManagerService {
     }
 
     async listSnippetDescriptors(page: number, pageSize: number): Promise<PaginatedSnippets> {
-        const userId = localStorage.getItem("userId");
-        if (!userId) {
+        const token = localStorage.getItem("token");
+        if (!token) {
             throw new Error("No user id found");
         }
-        const userSnippets = await SnippetManagerService.fetchAllUserSnippets(userId);
+        const userSnippets = await SnippetManagerService.fetchAllUserSnippets(token);
         const response: PaginatedSnippets = {
             page: page,
             page_size: pageSize,

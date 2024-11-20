@@ -1,22 +1,21 @@
-import {fetchAllUserSnippets} from "../../hooks/fetchAllUserSnippets.ts";
-import {CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet} from "../../utils/snippet.ts";
-import {fetchSnippetById} from "../../hooks/fetchSnippetById.ts";
-import {createSnippetFunction} from "../../hooks/createSnippetFunction.ts";
-import {updateSnippetFunction} from "../../hooks/updateSnippetFunction.ts";
+import { fetchAllUserSnippets } from "../../hooks/fetchAllUserSnippets";
+import { CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet } from "../../utils/snippet";
+import { fetchSnippetById } from "../../hooks/fetchSnippetById";
+import { createSnippetFunction } from "../../hooks/createSnippetFunction";
+import { updateSnippetFunction } from "../../hooks/updateSnippetFunction";
 import axios from "axios";
-// import {PaginatedUsers} from "../users.ts";
-// import {Rule} from "../../types/Rule.ts";
-// import {TestCase} from "../../types/TestCase.ts";
-// import {TestCaseResult} from "../queries.tsx";
-// import {FileType} from "../../types/FileType.ts";
+import { Rule } from "../../types/Rule";
+import { FakeSnippetStore } from '../mock/fakeSnippetStore';
 
-import {Rule} from "../../types/Rule.ts";
+const DELAY: number = 1000;
 
-const DELAY: number = 1000
 export class SnippetManagerService {
 
+    private readonly fakeStore = new FakeSnippetStore();
+    private readonly defaultLintingRules = this.fakeStore.getLintingRules();
+    private readonly defaultFormattingRules = this.fakeStore.getFormatRules();
 
-     async  createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
+    async createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error("No token found");
@@ -24,50 +23,51 @@ export class SnippetManagerService {
         return await createSnippetFunction(createSnippet, token) as Snippet;
     }
 
-    public static async fetchAllUserSnippets(id: string): Promise<Snippet[] | []> {
-        try{
-            const token = localStorage.getItem("token");
-            if (!token) {
-                throw new Error("No token found");
-            }
-            return await fetchAllUserSnippets(id, token) as Snippet[];
-        }
-        catch (error) {
-            console.error(error);
-            return [];
-        }
-    }
-
-     async fetchSnippetById(id: string): Promise<Snippet | []> {
+    public static async fetchAllUserSnippets(id: string): Promise<Snippet[]> {
         try {
             const token = localStorage.getItem("token");
             if (!token) {
                 throw new Error("No token found");
             }
-            console.log("juju")
+            return await fetchAllUserSnippets(id, token) as Snippet[];
+        } catch (error) {
+            console.error('Error fetching all user snippets:', error);
+            return [];
+        }
+    }
+
+    async fetchSnippetById(id: string): Promise<Snippet> {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("No token found");
+            }
             return await fetchSnippetById(id, token) as Snippet;
         } catch (error) {
-            console.error(error);
-            return [];
+            console.error('Error fetching snippet by ID:', error);
+            throw error;
         }
     }
 
     async listSnippetDescriptors(page: number, pageSize: number): Promise<PaginatedSnippets> {
         const token = localStorage.getItem("token");
         if (!token) {
-            throw new Error("No user id found");
+            throw new Error("No token found");
         }
-        const userSnippets = await SnippetManagerService.fetchAllUserSnippets(token);
+        const userSnippets = await SnippetManagerService.fetchAllUserSnippets("USER_ID"); // Reemplazar con el ID del usuario real
+        const startIndex = page * pageSize;
+        const endIndex = startIndex + pageSize;
 
         const response: PaginatedSnippets = {
-            page: page,
+            page,
             page_size: pageSize,
-            count: 20,
-            snippets: page == 0 ? userSnippets.splice(0, pageSize) : userSnippets.splice(1, 2)
-        }
+            count: userSnippets.length,
+            snippets: userSnippets.slice(startIndex, endIndex),
+        };
+
         return new Promise(resolve => {
-            setTimeout(() => resolve(response), DELAY)
-        })
+            setTimeout(() => resolve(response), DELAY);
+        });
     }
 
     async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
@@ -79,128 +79,109 @@ export class SnippetManagerService {
     }
 
     async deleteSnippet(id: string): Promise<string> {
-         console.log("holaaaaaa")
-        console.log(id)
         try {
-            await axios.post(`http://localhost:8083/snippets/delete/${id}`, {}, {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("No token found");
+            }
+            await axios.delete(`http://localhost:8083/snippets/${id}`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem("token")}`
-                }
+                    Authorization: `Bearer ${token}`,
+                },
             });
             return `Successfully deleted snippet of id: ${id}`;
         } catch (error) {
-            console.error(error);
-            return `Snippet of id: ${id} could not be deleted`;
+            console.error('Error deleting snippet:', error);
+            throw error;
         }
     }
 
-    async shareSnippet(snippetId: string,userId: string ): Promise<string> {
-         try {
-             const request = {userId: userId, snippetId: snippetId};
-             await axios.post(`/snippets/share/${request}`);
-             return `Successfully shared snippet of id: ${snippetId}`;
-         } catch (error) {
-             console.error(error);
-             return `Snippet of id: ${snippetId} could not be shared`;
-         }
-     }
-    modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
-        const userId = "2"; // Hardcodeado temporalmente
+    async shareSnippet(snippetId: string, userId: string): Promise<string> {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("No token found");
+            }
+            await axios.post(`http://localhost:8083/snippets/share`, { userId, snippetId }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return `Successfully shared snippet of id: ${snippetId}`;
+        } catch (error) {
+            console.error('Error sharing snippet:', error);
+            throw error;
+        }
+    }
 
-        return new Promise((resolve, reject) => {
-            axios.post('http://localhost:8080/saveLintingRules', {
-                userId: userId,
-                lintingRules: newRules
-            })
-                .then(response => {
-                    resolve(response.data); // Resuelve con la respuesta del backend
-                })
-                .catch(error => {
-                    console.error('Error al guardar las reglas de linting:', error);
-                    reject(error); // Rechaza la promesa en caso de error
-                });
-        });
+    getFormattingRules(): Promise<Rule[]> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
+
+        return axios.get('http://localhost:8083/snippets/getFormattingRules', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }).then(response => response.data)
+            .catch(async () => {
+                // Fallback: create default linting rules
+                return axios.post('http://localhost:8083/snippets/createFormatRules', { rules: this.defaultFormattingRules }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }).then(response => response.data);
+            });
     }
 
     modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
-        const userId = "2"; // Hardcodeado temporalmente
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
 
-        return new Promise((resolve, reject) => {
-            axios.post('http://localhost:8080/saveFormatRules', {
-                userId: userId,
-                lintingRules: newRules
-            })
-                .then(response => {
-                    resolve(response.data); // Resuelve con la respuesta del backend
-                })
-                .catch(error => {
-                    console.error('Error al guardar las reglas de linting:', error);
-                    reject(error); // Rechaza la promesa en caso de error
-                });
-        });
+        return axios.post('http://localhost:8080/modifyFormattingRules', { formattingRules: newRules }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }).then(response => response.data);
     }
 
+    async getLintingRules(): Promise<Rule[]> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
+        const response = await axios.get('http://localhost:8083/snippets/getLintingRules', {
+            headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
 
-    // getUserFriends(name: string = "", page: number = 1, pageSize: number = 10): Promise<PaginatedUsers> {
-    //     return new Promise(resolve => {
-    //         setTimeout(() => resolve(this.fakeStore.getUserFriends(name,page,pageSize)), DELAY)
-    //     })
-    // }
-    //
-    //
-    // getFormatRules(): Promise<Rule[]> {
-    //     return new Promise(resolve => {
-    //         setTimeout(() => resolve(this.fakeStore.getFormatRules()), DELAY)
-    //     })
-    // }
-    //
-    // getLintingRules(): Promise<Rule[]> {
-    //     return new Promise(resolve => {
-    //         setTimeout(() => resolve(this.fakeStore.getLintingRules()), DELAY)
-    //     })
-    // }
-    //
-    // formatSnippet(snippetContent: string): Promise<string> {
-    //     return new Promise(resolve => {
-    //         setTimeout(() => resolve(this.fakeStore.formatSnippet(snippetContent)), DELAY)
-    //     })
-    // }
-    //
-    // getTestCases(): Promise<TestCase[]> {
-    //     return new Promise(resolve => {
-    //         setTimeout(() => resolve(this.fakeStore.getTestCases()), DELAY)
-    //     })
-    // }
-    //
-    // postTestCase(testCase: TestCase): Promise<TestCase> {
-    //     return new Promise(resolve => {
-    //         setTimeout(() => resolve(this.fakeStore.postTestCase(testCase)), DELAY)
-    //     })
-    // }
-    //
-    // removeTestCase(id: string): Promise<string> {
-    //     return new Promise(resolve => {
-    //         setTimeout(() => resolve(this.fakeStore.removeTestCase(id)), DELAY)
-    //     })
-    // }
-    //
-    // testSnippet(): Promise<TestCaseResult> {
-    //     return new Promise(resolve => {
-    //         setTimeout(() => resolve(this.fakeStore.testSnippet()), DELAY)
-    //     })
-    // }
-    //
-    //
-    // getFileTypes(): Promise<FileType[]> {
-    //     return new Promise(resolve => {
-    //         setTimeout(() => resolve(this.fakeStore.getFileTypes()), DELAY)
-    //     })
-    // }
-    //
-    // modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
-    //     return new Promise(resolve => {
-    //         setTimeout(() => resolve(this.fakeStore.modifyFormattingRule(newRules)), DELAY)
-    //     })
-    // }
+            console.log("Fetched linting rules:", response.data);
+            if (response.data.length == 0) {
+                const response_1 = await axios.post('http://localhost:8083/snippets/createLintingRules',     { rules: JSON.stringify(this.defaultLintingRules) }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                console.log("Default linting rules created:", response_1.data);
+                return response_1.data;
+            }
+            return response.data;
+        }
 
+    modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
+
+        return axios.post('http://localhost:8083/modifyLintingRules', { lintingRules: newRules }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }).then(response => response.data);
+    }
 }

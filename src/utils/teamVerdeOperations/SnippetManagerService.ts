@@ -79,8 +79,14 @@ export class SnippetManagerService {
     }
 
     async deleteSnippet(id: string): Promise<string> {
+         console.log("holaaaaaa")
+        console.log(id)
         try {
-            await axios.post(`/snippets/delete/${id}`);
+            await axios.post(`http://localhost:8083/snippets/delete/${id}`, {}, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`
+                }
+            });
             return `Successfully deleted snippet of id: ${id}`;
         } catch (error) {
             console.error(error);

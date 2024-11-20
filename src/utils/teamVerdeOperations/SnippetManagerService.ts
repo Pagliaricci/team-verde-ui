@@ -184,4 +184,11 @@ export class SnippetManagerService {
             },
         }).then(response => response.data);
     }
+    async runAllTests(id: string): Promise<Map<string, string[]>> {
+        const response = await axios.post(`/tests/${id}/all`);
+        if (response.status !== 200) {
+            throw new Error("Failed to run all tests");
+        }
+        return response.data as Map<string, string[]>;
+    }
 }

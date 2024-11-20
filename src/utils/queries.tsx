@@ -17,7 +17,6 @@ export const useSnippetsOperations = () => {
         getAccessTokenSilently()
             .then(token => {
                 localStorage.setItem('token', token)
-                console.log(token)
             })
     });}
 
@@ -27,8 +26,7 @@ const realSnippetOperations: SnippetManagerService = new SnippetManagerService()
 
 //cambiar por el nuestro
 export const useGetSnippets = (page: number = 0, pageSize: number = 10, snippetName?: string) => {
-    const snippetOperations = useSnippetsOperations()
-    console.log(snippetOperations)
+    useSnippetsOperations()
     return useQuery<PaginatedSnippets, Error>(['listSnippets', page, pageSize, snippetName], () => realSnippetOperations.listSnippetDescriptors(page, pageSize), {});
 };
 

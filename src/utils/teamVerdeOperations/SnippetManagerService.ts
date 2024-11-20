@@ -44,6 +44,7 @@ export class SnippetManagerService {
             if (!token) {
                 throw new Error("No token found");
             }
+            console.log("juju")
             return await fetchSnippetById(id, token) as Snippet;
         } catch (error) {
             console.error(error);
@@ -57,6 +58,7 @@ export class SnippetManagerService {
             throw new Error("No user id found");
         }
         const userSnippets = await SnippetManagerService.fetchAllUserSnippets(token);
+
         const response: PaginatedSnippets = {
             page: page,
             page_size: pageSize,
@@ -105,7 +107,6 @@ export class SnippetManagerService {
                 lintingRules: newRules
             })
                 .then(response => {
-                    console.log('Respuesta del backend:', response.data);
                     resolve(response.data); // Resuelve con la respuesta del backend
                 })
                 .catch(error => {
@@ -124,7 +125,6 @@ export class SnippetManagerService {
                 lintingRules: newRules
             })
                 .then(response => {
-                    console.log('Respuesta del backend:', response.data);
                     resolve(response.data); // Resuelve con la respuesta del backend
                 })
                 .catch(error => {

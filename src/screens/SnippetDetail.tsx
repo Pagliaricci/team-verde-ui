@@ -1,38 +1,36 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import Editor from "react-simple-code-editor";
-import {highlight, languages} from "prismjs";
+import { highlight, languages } from "prismjs";
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
 import "prismjs/themes/prism-okaidia.css";
-import {Alert, Box, CircularProgress, IconButton, Tooltip, Typography} from "@mui/material";
+import { Alert, Box, CircularProgress, IconButton, Tooltip, Typography } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
-import {toast} from "react-toastify";
-import {useCheckIfOwner, useUpdateSnippetById, useRunAllTests} from "../utils/queries.tsx";
-import {useFormatSnippet, useGetSnippetById, useShareSnippet} from "../utils/queries.tsx";
-import {Bòx} from "../components/snippet-table/SnippetBox.tsx";
-import {BugReport, Delete, Download, Save, Share} from "@mui/icons-material";
-import {ShareSnippetModal} from "../components/snippet-detail/ShareSnippetModal.tsx";
-import {TestSnippetModal} from "../components/snippet-test/TestSnippetModal.tsx";
-import {Snippet} from "../utils/snippet.ts";
-import {SnippetExecution} from "./SnippetExecution.tsx";
+import { toast } from "react-toastify";
+import { useCheckIfOwner, useUpdateSnippetById, useRunAllTests } from "../utils/queries.tsx";
+import { useFormatSnippet, useGetSnippetById, useShareSnippet } from "../utils/queries.tsx";
+import { Bòx } from "../components/snippet-table/SnippetBox.tsx";
+import { BugReport, Delete, Download, Save, Share } from "@mui/icons-material";
+import { ShareSnippetModal } from "../components/snippet-detail/ShareSnippetModal.tsx";
+import { TestSnippetModal } from "../components/snippet-test/TestSnippetModal.tsx";
+import {Snippet, SnippetWithError, UpdateSnippet} from "../utils/snippet.ts";
+import { SnippetExecution } from "./SnippetExecution.tsx";
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
-import {queryClient} from "../App.tsx";
-import {DeleteConfirmationModal} from "../components/snippet-detail/DeleteConfirmationModal.tsx";
+import { queryClient } from "../App.tsx";
+import { DeleteConfirmationModal } from "../components/snippet-detail/DeleteConfirmationModal.tsx";
 
 type SnippetDetailProps = {
     id: string;
     handleCloseModal: () => void;
 }
 
-const DownloadButton = ({snippet}: { snippet?: Snippet }) => {
+const DownloadButton = ({ snippet }: { snippet?: Snippet }) => {
     if (!snippet) return null;
-    const file = new Blob([snippet.content], {type: 'text/plain'});
+    const file = new Blob([snippet.content], { type: 'text/plain' });
 
     return (
         <Tooltip title={"Download"}>
-            <IconButton sx={{
-                cursor: "pointer"
-            }}>
+            <IconButton sx={{ cursor: "pointer" }}>
                 <a download={`${snippet.name}.${snippet.extension}`} target="_blank"
                    rel="noreferrer" href={URL.createObjectURL(file)} style={{
                     textDecoration: "none",
@@ -40,7 +38,7 @@ const DownloadButton = ({snippet}: { snippet?: Snippet }) => {
                     display: 'flex',
                     alignItems: 'center',
                 }}>
-                    <Download/>
+                    <Download />
                 </a>
             </IconButton>
         </Tooltip>
@@ -48,26 +46,26 @@ const DownloadButton = ({snippet}: { snippet?: Snippet }) => {
 }
 
 export const SnippetDetail = (props: SnippetDetailProps) => {
-    const {id, handleCloseModal} = props;
+    const { id, handleCloseModal } = props;
     const [code, setCode] = useState("");
     const [shareModalOppened, setShareModalOppened] = useState(false);
     const [deleteConfirmationModalOpen, setDeleteConfirmationModalOpen] = useState(false);
     const [testModalOpened, setTestModalOpened] = useState(false);
-    const {data: snippet , isLoading} = useGetSnippetById(id);
-    const {mutate: shareSnippet, isLoading: loadingShare} = useShareSnippet()
-    const {mutate: formatSnippet, isLoading: isFormatLoading, data: formatSnippetData} = useFormatSnippet()
-    const {mutateAsync: updateSnippet, isLoading: isUpdateSnippetLoading} = useUpdateSnippetById({
+    const { data: snippet, isLoading } = useGetSnippetById(id);
+    const { mutate: shareSnippet, isLoading: loadingShare } = useShareSnippet();
+    const { mutate: formatSnippet, isLoading: isFormatLoading, data: formatSnippetData } = useFormatSnippet();
+    const { mutateAsync: updateSnippet, isLoading: isUpdateSnippetLoading } = useUpdateSnippetById({
         onSuccess: () => {
             queryClient.invalidateQueries(['snippet', id]).then();
         }
     });
 
-    const {mutateAsync: runAllTests} = useRunAllTests(id);
-    const isOwner = useCheckIfOwner(snippet?.owner);
+    const { mutateAsync: runAllTests } = useRunAllTests(id);
     const [errors, setErrors] = useState<string[]>([]);
+    const isOwner = useCheckIfOwner(snippet && !Array.isArray(snippet) ? snippet.owner : undefined);
 
     useEffect(() => {
-        if (snippet) {
+        if (snippet && !Array.isArray(snippet)) {
             setCode(snippet.content);
         }
     }, [snippet]);
@@ -91,13 +89,13 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                 setErrors([]);
                 const errorMessages = failedTests
                     .map(([testName, errors]) => `Failed test name: ${testName}\n\t${errors.join('\n\t')}`)
-            .join('\n');
+                    .join('\n');
 
                 const finalLine = `----------------------------------------------------------------------------`;
 
                 setErrors([summary, ...errorMessages.split('\n'), finalLine]);
 
-                toast.error(`${passedCount} tests passed, ${failedTests.length} tests failed)`;
+                toast.error(`${passedCount} tests passed, ${failedTests.length} tests failed`);
             } else {
                 toast.success("All tests passed 🎉");
             }
@@ -108,25 +106,31 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
     };
 
     async function handleShareSnippet(userId: string) {
-        shareSnippet({snippetId: id, userId})
+        shareSnippet({ snippetId: id, userId })
         setShareModalOppened(false)
     }
 
     const handleUpdateSnippet = async () => {
         setErrors([]);
         try {
-            const response = await updateSnippet({id: id, updateSnippet: {content: code}})
+            // Construye el objeto UpdateSnippet con las propiedades necesarias
+            const updateSnippetPayload: UpdateSnippet = {
+                content: code, // Asegúrate de que 'code' corresponde al contenido del snippet
+            };
 
-            if (response.errors && response.errors.length > 0) {
-                setErrors(response.errors);
+            // Llama a la función con el id y el payload
+            const response = await updateSnippet({ id, updateSnippet: updateSnippetPayload });
+
+            if ((response as SnippetWithError).errors && (response as SnippetWithError).errors.length > 0) {
+                setErrors((response as SnippetWithError).errors);
             } else {
                 handleRunAllTestsToast().then();
             }
         } catch (err) {
             console.error("An error occurred while updating the snippet:", err);
         }
+    };
 
-    }
 
     const handleClose = () => {
         setErrors([]);
@@ -136,58 +140,58 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
     return (
         <Box p={4} width={'60vw'}>
             <Box width={'100%'} p={2} display={'flex'} justifyContent={'flex-end'}>
-                <CloseIcon style={{cursor: "pointer"}} onClick={handleClose}/>
+                <CloseIcon style={{ cursor: "pointer" }} onClick={handleClose} />
             </Box>
             {
                 isLoading ? (<>
                     <Typography fontWeight={"bold"} mb={2} variant="h4">Loading...</Typography>
-                    <CircularProgress/>
+                    <CircularProgress />
                 </>) : <>
-                    <Typography variant="h4" fontWeight={"bold"}>{snippet?.name ?? "Snippet"}</Typography>
+                    <Typography variant="h4" fontWeight={"bold"}>{snippet && !Array.isArray(snippet) ? snippet.name : "Snippet"}</Typography>
                     {isOwner ? (
                         <Box display="flex" flexDirection="row" gap="8px" padding="8px">
                             <Tooltip title={"Share"}>
                                 <IconButton onClick={() => setShareModalOppened(true)}>
-                                    <Share/>
+                                    <Share />
                                 </IconButton>
                             </Tooltip>
                             <Tooltip title={"Test"}>
                                 <IconButton onClick={() => setTestModalOpened(true)}>
-                                    <BugReport/>
+                                    <BugReport />
                                 </IconButton>
                             </Tooltip>
-                            <DownloadButton snippet={snippet}/>
+                            <DownloadButton snippet={snippet && !Array.isArray(snippet) ? snippet : undefined} />
                             <Tooltip title={"Format"}>
                                 <IconButton onClick={() => {
-                                    if (snippet?.id) {
-                                        formatSnippet({id: snippet.id, content: code});
+                                    if (snippet && !Array.isArray(snippet) && snippet.id) {
+                                        formatSnippet(snippet.id);
                                     } else {
                                         console.error("Snippet ID is undefined");
                                     }
                                 }} disabled={isFormatLoading}>
-                                    <ReadMoreIcon/>
+                                    <ReadMoreIcon />
                                 </IconButton>
                             </Tooltip>
                             <Tooltip title={"Save changes"}>
                                 <IconButton color={"primary"}
                                             onClick={() => handleUpdateSnippet()}
-                                            disabled={isUpdateSnippetLoading || snippet?.content === code}>
-                                    <Save/>
+                                            disabled={isUpdateSnippetLoading || (snippet && !Array.isArray(snippet) && snippet.content === code)}>
+                                    <Save />
                                 </IconButton>
                             </Tooltip>
                             <Tooltip title={"Delete"}>
                                 <IconButton onClick={() => setDeleteConfirmationModalOpen(true)}>
-                                    <Delete color={"error"}/>
+                                    <Delete color={"error"} />
                                 </IconButton>
                             </Tooltip>
                         </Box>
                     ) : (
                         <Box display="flex" flexDirection="row" gap="8px" padding="8px">
                             <Typography variant="subtitle1" padding={1} color={"gray"}
-                                        sx={{fontStyle: 'italic'}}>{"Snippet is read only"}</Typography>
+                                        sx={{ fontStyle: 'italic' }}>{"Snippet is read only"}</Typography>
                             <Tooltip title={"Test"}>
                                 <IconButton onClick={() => setTestModalOpened(true)}>
-                                    <BugReport/>
+                                    <BugReport />
                                 </IconButton>
                             </Tooltip>
                         </Box>
@@ -212,18 +216,18 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                     {isOwner &&
                         <Box pt={1} flex={1} marginTop={2}>
                             <Alert severity="info">Output</Alert>
-                            <SnippetExecution errors={errors}/>
+                            <SnippetExecution errors={errors} />
                         </Box>
                     }
                 </>
             }
             <ShareSnippetModal loading={loadingShare || isLoading} open={shareModalOppened}
                                onClose={() => setShareModalOppened(false)}
-                               onShare={handleShareSnippet}/>
-            <TestSnippetModal open={testModalOpened} onClose={() => setTestModalOpened(false)} snippetId={id}/>
+                               onShare={handleShareSnippet} />
+            <TestSnippetModal open={testModalOpened} onClose={() => setTestModalOpened(false)} snippetId={id} />
             <DeleteConfirmationModal open={deleteConfirmationModalOpen}
                                      onClose={() => setDeleteConfirmationModalOpen(false)}
-                                     id={snippet?.id ?? ""} setCloseDetails={handleCloseModal}/>
+                                     id={snippet && !Array.isArray(snippet) ? snippet.id : ""} setCloseDetails={handleCloseModal} />
         </Box>
     )
 };

@@ -5,15 +5,11 @@ import { createSnippetFunction } from "../../hooks/createSnippetFunction";
 import { updateSnippetFunction } from "../../hooks/updateSnippetFunction";
 import axios from "axios";
 import { Rule } from "../../types/Rule";
-import { FakeSnippetStore } from '../mock/fakeSnippetStore';
 
 const DELAY: number = 1000;
 
 export class SnippetManagerService {
 
-    private readonly fakeStore = new FakeSnippetStore();
-    private readonly defaultLintingRules = this.fakeStore.getLintingRules();
-    private readonly defaultFormattingRules = this.fakeStore.getFormatRules();
 
     async createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
         const token = localStorage.getItem("token");
@@ -114,34 +110,27 @@ export class SnippetManagerService {
         }
     }
 
-    getFormattingRules(): Promise<Rule[]> {
+    async getFormattingRules(): Promise<Rule[]> {
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error("No token found");
         }
-
-        return axios.get('http://localhost:8083/snippets/getFormattingRules', {
+        const response = await axios.get('http://localhost:8083/snippets/getFormattingRules', {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-        }).then(response => response.data)
-            .catch(async () => {
-                // Fallback: create default linting rules
-                return axios.post('http://localhost:8083/snippets/createFormatRules', { rules: this.defaultFormattingRules }, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }).then(response => response.data);
-            });
+        });
+        return response.data as Promise<Rule[]>;
     }
 
-    modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
+    async modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
+        console.log(newRules);
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error("No token found");
         }
 
-        return axios.post('http://localhost:8080/modifyFormattingRules', { formattingRules: newRules }, {
+        return await axios.post('http://localhost:8083/snippets/modifyFormattingRules', newRules, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -158,27 +147,17 @@ export class SnippetManagerService {
                     Authorization: `Bearer ${token}`,
                 },
             });
+        return response.data as Promise<Rule[]>;
+    }
 
-            console.log("Fetched linting rules:", response.data);
-            if (response.data.length == 0) {
-                const response_1 = await axios.post('http://localhost:8083/snippets/createLintingRules',     { rules: JSON.stringify(this.defaultLintingRules) }, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                console.log("Default linting rules created:", response_1.data);
-                return response_1.data;
-            }
-            return response.data;
-        }
-
-    modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
+    async modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
+        console.log(newRules);
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error("No token found");
         }
 
-        return axios.post('http://localhost:8083/modifyLintingRules', { lintingRules: newRules }, {
+        return await axios.post('http://localhost:8083/snippets/modifyLintingRules', newRules, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

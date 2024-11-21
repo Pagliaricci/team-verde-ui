@@ -110,7 +110,7 @@ export const useTestSnippet = () => {
 
 
 export const useGetFormatRules = () => {
-    return useQuery<Rule[], Error>('formatRules', () => snippetOperations.getFormatRules());
+    return useQuery<Rule[], Error>('formatRules', () =>  realSnippetOperations.getFormattingRules());
 }
 
 export const useModifyFormatRules = ({onSuccess}: { onSuccess: () => void }) => {
@@ -128,7 +128,7 @@ export const useGetLintingRules = () => {
 
 export const useModifyLintingRules = ({onSuccess}: { onSuccess: () => void }) => {
     return useMutation<Rule[], Error, Rule[]>(
-        rule => snippetOperations.modifyLintingRule(rule),
+        rule => realSnippetOperations.modifyLintingRule(rule),
         {onSuccess}
     );
 }

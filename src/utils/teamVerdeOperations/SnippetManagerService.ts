@@ -6,6 +6,7 @@ import { updateSnippetFunction } from "../../hooks/updateSnippetFunction";
 import axios from "axios";
 import { Rule } from "../../types/Rule";
 import { FakeSnippetStore } from '../mock/fakeSnippetStore';
+import {toast} from "react-toastify";
 
 const DELAY: number = 1000;
 
@@ -96,23 +97,67 @@ export class SnippetManagerService {
         }
     }
 
-    async shareSnippet(snippetId: string, userId: string): Promise<string> {
+    async shareSnippet(snippetId: string, userId: string): Promise<Snippet> {
         try {
             const token = localStorage.getItem("token");
             if (!token) {
                 throw new Error("No token found");
             }
-            await axios.post(`http://localhost:8083/snippets/share`, { userId, snippetId }, {
+
+            // Obtener los detalles del usuario destinatario desde el backend
+            const userResponse = await axios.get(`http://localhost:8083/users/${userId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            return `Successfully shared snippet of id: ${snippetId}`;
+
+            const user = userResponse.data;
+            if (!user || !user.email) {
+                throw new Error("User not found or email is missing");
+            }
+
+            // Obtener el correo electrónico del propietario
+            const ownerResponse = await axios.get(`http://localhost:8083/users/owner`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            const owner = ownerResponse.data;
+            if (!owner || !owner.email) {
+                throw new Error("Owner email is missing");
+            }
+
+            // Realizar la solicitud para compartir el snippet
+            const response = await axios.post(
+                `http://localhost:8083/snippets/share/${snippetId}`,
+                { fromEmail: owner.email, toEmail: user.email },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            // Notificar al usuario sobre el éxito
+            toast.success("Snippet shared successfully!");
+            return response.data; // Asegúrate de que el backend devuelva el objeto `Snippet`
         } catch (error) {
-            console.error('Error sharing snippet:', error);
+            if (axios.isAxiosError(error)) {
+                if (error.response?.status === 403) {
+                    toast.error("You do not have permission to share this snippet.");
+                } else {
+                    toast.error(error.response?.data?.message || "An error occurred");
+                }
+            } else {
+                toast.error("An unexpected error occurred");
+            }
+            console.error("Error sharing snippet:", error);
             throw error;
         }
     }
+
+
 
     getFormattingRules(): Promise<Rule[]> {
         const token = localStorage.getItem("token");

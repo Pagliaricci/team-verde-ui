@@ -5,6 +5,7 @@ import { createSnippetFunction } from "../../hooks/createSnippetFunction";
 import { updateSnippetFunction } from "../../hooks/updateSnippetFunction";
 import axios from "axios";
 import { Rule } from "../../types/Rule";
+import {TestCase} from "../../types/TestCase.ts";
 
 const DELAY: number = 1000;
 
@@ -162,5 +163,33 @@ export class SnippetManagerService {
                 Authorization: `Bearer ${token}`,
             },
         }).then(response => response.data);
+    }
+
+    async getTestCases(snippetId: string): Promise<TestCase[]> {
+        if (!snippetId) {
+            throw new Error("SnippetId is needed to show snippet's tests");
+        }
+
+        const response = await axios.get('http://localhost:8083/snippets/test/snippet/${snippetId}');
+        return Array.isArray(response.data) ? response.data : [];
+    }
+
+    async postTestCase(testCase: Partial<TestCase>, snippetId: string): Promise<TestCase> {
+        if (!snippetId) {
+            throw new Error("SnippetId is needed to post a test case");
+        }
+        if (!testCase.input || !testCase.output) {
+            throw new Error("Input and output are required for a test case");
+        }
+        const response = await axios.post('http://localhost:8083/snippets/test/snippet/${snippetId}', testCase);
+        return response.data;
+    }
+
+    async removeTestCase(testId: string): Promise<string> {
+        if (!testId) {
+            throw new Error("TestCaseId is needed to remove a test case");
+        }
+        const response = await axios.delete('http://localhost:8083/snippets/test/${id}');
+        return response.data;
     }
 }

@@ -6,7 +6,6 @@ import {QueryClient, QueryClientProvider} from "react-query";
 import RulesScreen from "./screens/Rules.tsx";
 import {withAuthenticationRequired} from "@auth0/auth0-react";
 
-
 const router = createBrowserRouter([
     {
         path: "/",

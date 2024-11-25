@@ -80,7 +80,7 @@ export class SnippetManagerService {
             if (!token) {
                 throw new Error("No token found");
             }
-            await axios.delete(`http://localhost:8083/snippets/${id}`, {
+            await axios.delete(`http://localhost:8083/snippets/delete/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -130,7 +130,7 @@ export class SnippetManagerService {
             throw new Error("No token found");
         }
 
-        return await axios.post('http://localhost:8083/snippets/modifyFormattingRules', newRules, {
+        return await axios.post('http://localhost:8083/modifyFormattingRules', newRules, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -142,7 +142,7 @@ export class SnippetManagerService {
         if (!token) {
             throw new Error("No token found");
         }
-        const response = await axios.get('http://localhost:8083/snippets/getLintingRules', {
+        const response = await axios.get('http://localhost:8083/getLintingRules', {
             headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -157,10 +157,35 @@ export class SnippetManagerService {
             throw new Error("No token found");
         }
 
-        return await axios.post('http://localhost:8083/snippets/modifyLintingRules', newRules, {
+        return await axios.post('http://localhost:8083/modifyLintingRules', newRules, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         }).then(response => response.data);
     }
+    async formatSnippet(snippetId: string, snippetContent: string): Promise<string> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
+
+        const formattingRequest = {
+            snippetId, // Clave: snippetId
+            content: snippetContent, // Clave: content
+        };
+
+        return axios
+            .post("http://localhost:8083/formatSnippet", formattingRequest, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json", // Asegúrate de usar JSON como formato
+                },
+            })
+            .then(response => response.data)
+            .catch(error => {
+                console.error("Error formatting snippet:", error);
+                throw error;
+            });
+    }
+
 }

@@ -115,7 +115,7 @@ export const useGetFormatRules = () => {
 
 export const useModifyFormatRules = ({onSuccess}: { onSuccess: () => void }) => {
     return useMutation<Rule[], Error, Rule[]>(
-        rule => snippetOperations.modifyFormatRule(rule),
+        rule => realSnippetOperations.modifyFormatRule(rule),
         {onSuccess}
     );
 }
@@ -134,8 +134,8 @@ export const useModifyLintingRules = ({onSuccess}: { onSuccess: () => void }) =>
 }
 
 export const useFormatSnippet = () => {
-    return useMutation<string, Error, string>(
-        snippetContent => snippetOperations.formatSnippet(snippetContent)
+    return useMutation<string, Error, { id: string, content: string }>(
+        ({id, content}) => realSnippetOperations.formatSnippet(id, content)
     );
 }
 

@@ -102,13 +102,19 @@ export const useRemoveTestCase = ({onSuccess}: { onSuccess: () => void }) => {
     );
 };
 
-export type TestCaseResult = "success" | "fail"
+export type TestCaseResult = "test passed" | "test failed"
 
 export const useTestSnippet = () => {
     return useMutation<TestCaseResult, Error, Partial<TestCase>>(
-        (tc) => snippetOperations.testSnippet(tc)
+        (tc) => realSnippetOperations.testSnippet(tc)
     )
 }
+
+export const useRunAllSnippetTests = (snippetId: string) => {
+    return useMutation<string[], Error>(
+        () => realSnippetOperations.runAllTests(snippetId)
+    );
+};
 
 
 export const useGetFormatRules = () => {

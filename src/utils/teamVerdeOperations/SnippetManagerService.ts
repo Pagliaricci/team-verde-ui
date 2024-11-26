@@ -6,6 +6,7 @@ import { updateSnippetFunction } from "../../hooks/updateSnippetFunction";
 import axios from "axios";
 import { Rule } from "../../types/Rule";
 import {TestCase} from "../../types/TestCase.ts";
+import {TestCaseResult} from "../queries.tsx";
 
 const DELAY: number = 1000;
 
@@ -242,5 +243,46 @@ export class SnippetManagerService {
         });
         console.log(`test with id: ${testId} removed`)
         return response.data;
+    }
+
+    async testSnippet(testCase: Partial<TestCase>): Promise<TestCaseResult> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
+
+        if (!testCase.id) {
+            throw new Error("Test ID is required to run a test");
+        }
+
+        const response = await axios.post(
+            `http://localhost:8083/api/test/${testCase.id}/run`,
+            { input: testCase.input, output: testCase.output },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+
+        console.log(response.data as TestCaseResult)
+        return response.data as TestCaseResult;
+    }
+
+
+    async runAllTests(snippetId: string): Promise<string[]> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
+        const response = await axios.post(`http://localhost:8083/api/test/${snippetId}/all`,{
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        if(response.status != 200){
+            throw new Error("Failed to run all tests");
+        }
+        return response.data as string[];
     }
 }

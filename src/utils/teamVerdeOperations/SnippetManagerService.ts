@@ -118,7 +118,7 @@ export class SnippetManagerService {
         if (!token) {
             throw new Error("No token found");
         }
-        const response = await axios.get('http://localhost:8083/snippets/getFormattingRules', {
+        const response = await axios.get('http://localhost:8083/getFormattingRules', {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

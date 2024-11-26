@@ -16,7 +16,7 @@ export const fetchSnippetById = async (id: string, token: string): Promise<Snipp
         language: response.data.languageName,
         extension: response.data.languageExtension,
         compliance: response.data.conformance,
-        author: response.data.userId,
+        author: response.data.username,
     };
   } catch (error) {
     console.error(error);

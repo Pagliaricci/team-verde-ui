@@ -35,6 +35,7 @@ export class SnippetManagerService {
 
     async fetchSnippetById(id: string): Promise<Snippet> {
         try {
+            localStorage.setItem("snippetId", id);
             const token = localStorage.getItem("token");
             if (!token) {
                 throw new Error("No token found");
@@ -191,30 +192,54 @@ export class SnippetManagerService {
 
 
     async getTestCases(snippetId: string): Promise<TestCase[]> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
         if (!snippetId) {
             throw new Error("SnippetId is needed to show snippet's tests");
         }
-
-        const response = await axios.get('http://localhost:8083/snippets/test/snippet/${snippetId}');
+        const response = await axios.get(`http://localhost:8083/api/test/snippet/${snippetId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
         return Array.isArray(response.data) ? response.data : [];
     }
 
     async postTestCase(testCase: Partial<TestCase>, snippetId: string): Promise<TestCase> {
-        if (!snippetId) {
-            throw new Error("SnippetId is needed to post a test case");
-        }
-        if (!testCase.input || !testCase.output) {
-            throw new Error("Input and output are required for a test case");
-        }
-        const response = await axios.post('http://localhost:8083/snippets/test/snippet/${snippetId}', testCase);
-        return response.data;
+    console.log(snippetId)
+    const token = localStorage.getItem("token");
+    if (!token) {
+        throw new Error("No token found");
     }
+    if (!snippetId) {
+        throw new Error("SnippetId is needed to post a test case");
+    }
+    if (!testCase.input || !testCase.output) {
+        throw new Error("Input and output are required for a test case");
+    }
+    const response = await axios.post(`http://localhost:8083/api/test/snippet/${snippetId}`, testCase, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data;
+}
 
     async removeTestCase(testId: string): Promise<string> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
         if (!testId) {
             throw new Error("TestCaseId is needed to remove a test case");
         }
-        const response = await axios.delete('http://localhost:8083/snippets/test/${id}');
+        const response = await axios.delete('http://localhost:8083/api/test/${testId}', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
         return response.data;
     }
 }

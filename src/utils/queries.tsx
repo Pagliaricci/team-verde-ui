@@ -79,9 +79,12 @@ export const useShareSnippet = () => {
 };
 
 export const useGetTestCases = (snippetId: string) => {
-    return useQuery<TestCase[] | undefined, Error>(['testCases'], () => realSnippetOperations.getTestCases(snippetId), {});
+    return useQuery<TestCase[] | undefined, Error>(
+        ['testCases', snippetId],
+        () => realSnippetOperations.getTestCases(snippetId),
+        {}
+    );
 };
-
 
 export const usePostTestCase = (snippetId: string) => {
     return useMutation<TestCase, Error, Partial<TestCase>>(
@@ -89,14 +92,13 @@ export const usePostTestCase = (snippetId: string) => {
     );
 };
 
-
 export const useRemoveTestCase = ({onSuccess}: { onSuccess: () => void }) => {
     return useMutation<string, Error, string>(
         ['removeTestCase'],
         (id) => realSnippetOperations.removeTestCase(id),
-        {
-            onSuccess,
-        }
+            {
+                onSuccess,
+            }
     );
 };
 

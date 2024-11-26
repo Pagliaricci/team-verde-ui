@@ -235,11 +235,12 @@ export class SnippetManagerService {
         if (!testId) {
             throw new Error("TestCaseId is needed to remove a test case");
         }
-        const response = await axios.delete('http://localhost:8083/api/test/${testId}', {
+        const response = await axios.delete(`http://localhost:8083/api/test/${testId}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         });
+        console.log(`test with id: ${testId} removed`)
         return response.data;
     }
 }

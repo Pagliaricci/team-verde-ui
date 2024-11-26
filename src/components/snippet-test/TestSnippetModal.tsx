@@ -30,7 +30,7 @@ export const TestSnippetModal = ({open, onClose, snippetId}: TestSnippetModalPro
         };
 
         await postTestCase.mutateAsync(sanitizedTestCase);
-        await queryClient.invalidateQueries('testCases'); // Refrescar la lista
+        await queryClient.invalidateQueries(['testCases', snippetId]);
     };
 
     const handleRemoveTestCase = async (id: string) => {

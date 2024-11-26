@@ -209,7 +209,6 @@ export class SnippetManagerService {
     }
 
     async postTestCase(testCase: Partial<TestCase>, snippetId: string): Promise<TestCase> {
-    console.log(snippetId)
     const token = localStorage.getItem("token");
     if (!token) {
         throw new Error("No token found");
@@ -246,6 +245,7 @@ export class SnippetManagerService {
     }
 
     async testSnippet(testCase: Partial<TestCase>): Promise<TestCaseResult> {
+        console.log("Sending to backend:", { input: testCase.input, output: testCase.output });
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error("No token found");

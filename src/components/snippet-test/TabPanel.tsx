@@ -1,9 +1,8 @@
 import {useEffect, useState} from "react";
 import {TestCase} from "../../types/TestCase.ts";
-import {Autocomplete, Box, Button, Chip, TextField, Typography} from "@mui/material";
-import {BugReport, Delete, Save} from "@mui/icons-material";
+import {Autocomplete, Box, Button, Chip, TextField, Typography, CircularProgress} from "@mui/material";
+import {BugReport, Delete, Save, CheckCircle, Error} from "@mui/icons-material";
 import {useTestSnippet} from "../../utils/queries.tsx";
-import { toast } from "react-toastify";
 
 type TabPanelProps = {
     index: number;
@@ -15,18 +14,30 @@ type TabPanelProps = {
 
 export const TabPanel = ({value, index, test: initialTest, setTestCase, removeTestCase}: TabPanelProps) => {
     const [testData, setTestData] = useState<Partial<TestCase> | undefined>(initialTest);
-    const {mutateAsync: testSnippet} = useTestSnippet();
+    const { mutateAsync: testSnippet } = useTestSnippet();
+    const [testStatus, setTestStatus] = useState<"loading" | "passed" | "failed" | null>(null);
 
     useEffect(() => {
         setTestData(initialTest ?? { input: [], output: [] });
     }, [initialTest, index]);
 
     const handleTest = async () => {
-        const result = await testSnippet(testData ?? {});
-        if (result === "test passed") {
-            toast.success("Test passed 🎉");
-        } else {
-            toast.error("Test failed 😢");
+        setTestStatus("loading"); // Mostrar estado de carga
+        try {
+            console.log("Testing data:", testData);
+            const result = await testSnippet(testData ?? {}); // Ejecutar el test
+            console.log("Result from test:", result);
+
+            if (result === "test passed") {
+                setTestStatus("passed");
+            } else if (result === "test failed") {
+                setTestStatus("failed");
+            } else {
+                setTestStatus(null);
+            }
+        } catch (error) {
+            console.error("Error during test execution:", error);
+            setTestStatus("failed");
         }
     };
 
@@ -89,7 +100,7 @@ export const TabPanel = ({value, index, test: initialTest, setTestCase, removeTe
                             options={[]}
                         />
                     </Box>
-                    <Box display="flex" flexDirection="row" gap={1}>
+                    <Box display="flex" flexDirection="row" gap={1} alignItems="center">
                         {testData?.id && removeTestCase && (
                             <Button onClick={() => removeTestCase(testData.id ?? "")} variant="outlined" color="error" startIcon={<Delete />}>
                                 Remove
@@ -103,9 +114,21 @@ export const TabPanel = ({value, index, test: initialTest, setTestCase, removeTe
                                 Test
                             </Button>
                         )}
+                        {/* Indicador del estado del test */}
+                        {testStatus === "loading" && <CircularProgress size={20} />}
+                        {testStatus === "passed" && (
+                            <Typography color="green" fontWeight="bold" display="flex" alignItems="center">
+                                <CheckCircle style={{ marginRight: 4, color: "green" }} /> Passed
+                            </Typography>
+                        )}
+                        {testStatus === "failed" && (
+                            <Typography color="red" fontWeight="bold" display="flex" alignItems="center">
+                                <Error style={{ marginRight: 4, color: "red" }} /> Failed
+                            </Typography>
+                        )}
                     </Box>
                 </Box>
             )}
         </div>
     );
-}
+};

@@ -13,7 +13,7 @@ import {
     Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { useUpdateSnippetById } from "../utils/queries.tsx";
+import { useUpdateSnippetById, useRunAllSnippetTests } from "../utils/queries.tsx"; // Added useRunAllSnippetTests
 import {
     useFormatSnippet,
     useGetSnippetById,
@@ -51,7 +51,7 @@ const DownloadButton = ({ snippet }: { snippet?: Snippet }) => {
             setFileUrl(url);
 
             return () => {
-                URL.revokeObjectURL(url); // Liberar memoria
+                URL.revokeObjectURL(url); // Free memory
             };
         }
     }, [snippet]);
@@ -83,6 +83,8 @@ const DownloadButton = ({ snippet }: { snippet?: Snippet }) => {
 export const SnippetDetail = (props: SnippetDetailProps) => {
     const { id, handleCloseModal } = props;
     const [code, setCode] = useState("");
+    const [errors, setErrors] = useState<string[]>([]); // Test error messages
+    const [testResults, setTestResults] = useState<string | null>(null); // Test results summary
     const [shareModalOpened, setShareModalOpened] = useState(false);
     const [deleteConfirmationModalOpen, setDeleteConfirmationModalOpen] =
         useState(false);
@@ -97,6 +99,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
         useUpdateSnippetById({
             onSuccess: () => queryClient.invalidateQueries(["snippet", id]),
         });
+    const { mutateAsync: runAllSnippetTests } = useRunAllSnippetTests(id); // Add run all tests logic
 
     useEffect(() => {
         if (snippet?.content) {
@@ -109,6 +112,60 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
             setCode(formatSnippetData);
         }
     }, [formatSnippetData]);
+
+    async function handleRunAllTestsToast() {
+        try {
+            const testErrors = await runAllSnippetTests(id);
+
+            console.log("Test errors response:", testErrors); // Debug response
+
+            if (Array.isArray(testErrors)) {
+                if (testErrors.length === 0) {
+                    setTestResults("All tests passed successfully.");
+                } else {
+                    setTestResults(
+                        `Some tests failed:\n${testErrors.map(
+                            (error) => `Test: ${error.name} - ${error.error}`
+                        ).join("\n")}`
+                    );
+                }
+            } else if (typeof testErrors === "object" && testErrors !== null) {
+                const failedTests = Object.entries(testErrors)
+                    .filter(([testName, errors]) => errors.length > 0)
+                    .map(([testName, errors]) => `Test: ${testName} - ${errors.join(", ")}`)
+                    .join("\n");
+
+                if (failedTests) {
+                    setTestResults(`Some tests failed:\n${failedTests}`);
+                } else {
+                    setTestResults("All tests passed successfully.");
+                }
+            } else {
+                setTestResults("Unexpected test results format.");
+                console.error("Unexpected test results format:", testErrors);
+            }
+        } catch (err) {
+            setTestResults("Failed to run all tests. Please try again later.");
+            console.error("Error running tests:", err);
+        }
+    }
+
+
+
+    async function handleUpdateSnippet() {
+        setErrors([]);
+        setTestResults(null);
+
+        try {
+            await updateSnippet({ id: id, updateSnippet: { content: code } });
+
+            // Run tests after updating snippet
+            await handleRunAllTestsToast();
+        } catch (err) {
+            setTestResults("Error updating snippet. Please try again.");
+            console.error("Update error:", err);
+        }
+    }
 
     async function handleShareSnippet(userId: string) {
         shareSnippet({ snippetId: id, userId });
@@ -142,9 +199,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                                 <BugReport />
                             </IconButton>
                         </Tooltip>
-                        <DownloadButton
-                            snippet={snippet}
-                        />
+                        <DownloadButton snippet={snippet} />
                         <Tooltip title={runSnippet ? "Stop run" : "Run"}>
                             <IconButton onClick={() => setRunSnippet(!runSnippet)}>
                                 {runSnippet ? <StopRounded /> : <PlayArrow />}
@@ -167,12 +222,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                         <Tooltip title={"Save changes"}>
                             <IconButton
                                 color={"primary"}
-                                onClick={() =>
-                                    updateSnippet({
-                                        id: id,
-                                        updateSnippet: { content: code },
-                                    })
-                                }
+                                onClick={handleUpdateSnippet}
                                 disabled={
                                     isUpdateSnippetLoading || snippet?.content === code
                                 }
@@ -199,7 +249,9 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                                 value={code}
                                 padding={10}
                                 onValueChange={(code) => setCode(code)}
-                                highlight={(code) => highlight(code, languages.js, "javascript")}
+                                highlight={(code) =>
+                                    highlight(code, languages.js, "javascript")
+                                }
                                 style={{
                                     minHeight: "500px",
                                     fontFamily: "monospace",
@@ -212,6 +264,11 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                         <Alert severity="info">Output</Alert>
                         <SnippetExecution />
                     </Box>
+                    {testResults && (
+                        <Box pt={2}>
+                            <Alert severity="info">{testResults}</Alert>
+                        </Box>
+                    )}
                 </>
             )}
             <ShareSnippetModal

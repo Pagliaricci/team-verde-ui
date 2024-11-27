@@ -270,19 +270,33 @@ export class SnippetManagerService {
     }
 
 
-    async runAllTests(snippetId: string): Promise<string[]> {
+    async runAllTests(snippetId: string): Promise<any> {
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error("No token found");
         }
-        const response = await axios.post(`http://localhost:8083/api/test/${snippetId}/all`,{
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        if(response.status != 200){
-            throw new Error("Failed to run all tests");
+
+        try {
+            const response = await axios.post(
+                `http://localhost:8083/api/test/${snippetId}/all`,
+                {}, // No body required
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (response.status === 200) {
+                return response.data; // Ensure this matches the backend response
+            } else {
+                throw new Error(`Unexpected response status: ${response.status}`);
+            }
+        } catch (error: any) {
+            console.error("Error in runAllTests:", error.response || error.message);
+            throw new Error(error.response?.data?.message || "Failed to run all tests");
         }
-        return response.data as string[];
     }
+
 }

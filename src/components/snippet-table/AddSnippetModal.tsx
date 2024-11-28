@@ -115,7 +115,6 @@ export const AddSnippetModal = ({ open, onClose, defaultSnippet }: { open: boole
                     }}
                 />
             </Box>
-
             {/* Mostrar error si es necesario */}
             {errorMessage && (
                 <Typography color="error" sx={{ marginTop: '20px' }}>

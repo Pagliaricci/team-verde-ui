@@ -18,15 +18,8 @@ export const createSnippetFunction = async (snippet: CreateSnippet, token: strin
         if(response.data.message != ""){
             return response.data.message;
         }
-        // const snippet: Snippet = {
-        //     id: response.data.id,
-        //     name: response.data.name,
-        //     language: response.data.language,
-        //     extension: response.data.extension,
-        //     version: response.data.version,
-        //
-        // }
         return response.data as Snippet;
+
     } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
             // Si es un error de Axios con respuesta del backend

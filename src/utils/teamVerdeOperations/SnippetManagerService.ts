@@ -7,6 +7,7 @@ import axios from "axios";
 import { Rule } from "../../types/Rule";
 import {TestCase} from "../../types/TestCase.ts";
 import {TestCaseResult} from "../queries.tsx";
+import {TestResponse} from "../../hooks/TestResponse.ts";
 
 const DELAY: number = 1000;
 
@@ -208,24 +209,26 @@ export class SnippetManagerService {
         return Array.isArray(response.data) ? response.data : [];
     }
 
-    async postTestCase(testCase: Partial<TestCase>, snippetId: string): Promise<TestCase> {
-    const token = localStorage.getItem("token");
-    if (!token) {
-        throw new Error("No token found");
+    async postTestCase(testCase: Partial<TestCase>, snippetId: string): Promise<TestResponse> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
+        if (!snippetId) {
+            throw new Error("SnippetId is needed to post a test case");
+        }
+        const response = await axios.post<TestResponse>(
+            `http://localhost:8083/api/test/snippet/${snippetId}`,
+            testCase,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        console.log(response.data);
+        return response.data;
     }
-    if (!snippetId) {
-        throw new Error("SnippetId is needed to post a test case");
-    }
-    if (!testCase.input || !testCase.output) {
-        throw new Error("Input and output are required for a test case");
-    }
-    const response = await axios.post(`http://localhost:8083/api/test/snippet/${snippetId}`, testCase, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    return response.data;
-}
 
     async removeTestCase(testId: string): Promise<string> {
         const token = localStorage.getItem("token");
@@ -279,7 +282,7 @@ export class SnippetManagerService {
         try {
             const response = await axios.post(
                 `http://localhost:8083/api/test/${snippetId}/all`,
-                {}, // No body required
+                {},
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,

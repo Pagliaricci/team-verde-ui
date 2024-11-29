@@ -48,7 +48,7 @@ jobs:
     steps:
       - name: Set host dynamically
         id: set-host
-        run: echo "::set-output name=host::$(if [ '${{ github.ref_name }}' == 'main' ]; then echo '4.242.32.158'; else echo '172.179.233.92'; fi)"
+        run: echo "::set-output name=host::$(if [ '${{ github.ref_name }}' == 'master' ]; then echo '4.242.32.158'; else echo '172.179.233.92'; fi)"
 
       - name: Execute Remote SSH Commands
         uses: appleboy/ssh-action@v1.1.0

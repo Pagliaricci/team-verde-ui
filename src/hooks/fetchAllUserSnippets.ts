@@ -3,7 +3,7 @@ import { Snippet } from '../utils/snippet.ts';
 
 export const fetchAllUserSnippets = async (id: string, token: string): Promise<Snippet[] | []> => {
     try {
-        const response = await axios.get('http://snippets-service-infra:/snippets/', {
+        const response = await axios.get('https://teamverde.westus2.cloudapp.azure.com/snippets/', {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

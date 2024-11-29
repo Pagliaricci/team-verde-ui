@@ -65,4 +65,5 @@ jobs:
             sudo docker compose up snippet-ui-infra -d
 
 
+
 #sudo docker run -d --name snippets-service-infra -p 8082:8080 ghcr.io/teamverdeingsis/snippets:latest

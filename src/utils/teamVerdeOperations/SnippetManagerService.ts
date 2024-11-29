@@ -85,7 +85,7 @@ export class SnippetManagerService {
             if (!token) {
                 throw new Error("No token found");
             }
-            await axios.delete(`http://localhost:8083/snippets/delete/${id}`, {
+            await axios.delete(`https://snippets-service-infra:8080/snippets/delete/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -103,7 +103,7 @@ export class SnippetManagerService {
             if (!token) {
                 throw new Error("No token found");
             }
-            await axios.post(`http://localhost:8083/snippets/share`, { userId, snippetId }, {
+            await axios.post(`https://snippets-service-infra:8080/snippets/share`, { userId, snippetId }, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -120,7 +120,7 @@ export class SnippetManagerService {
         if (!token) {
             throw new Error("No token found");
         }
-        const response = await axios.get('http://localhost:8083/getFormattingRules', {
+        const response = await axios.get('https://snippets-service-infra:8080/getFormattingRules', {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -135,7 +135,7 @@ export class SnippetManagerService {
             throw new Error("No token found");
         }
 
-        return await axios.post('http://localhost:8083/modifyFormattingRules', newRules, {
+        return await axios.post('https://snippets-service-infra:8080/modifyFormattingRules', newRules, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -147,7 +147,7 @@ export class SnippetManagerService {
         if (!token) {
             throw new Error("No token found");
         }
-        const response = await axios.get('http://localhost:8083/getLintingRules', {
+        const response = await axios.get('https://snippets-service-infra:8080/getLintingRules', {
             headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -162,7 +162,7 @@ export class SnippetManagerService {
             throw new Error("No token found");
         }
 
-        return await axios.post('http://localhost:8083/modifyLintingRules', newRules, {
+        return await axios.post('https://snippets-service-infra:8080/modifyLintingRules', newRules, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -180,7 +180,7 @@ export class SnippetManagerService {
         };
 
         return axios
-            .post("http://localhost:8083/formatSnippet", formattingRequest, {
+            .post("https://snippets-service-infra:8080/formatSnippet", formattingRequest, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json", // Asegúrate de usar JSON como formato
@@ -202,7 +202,7 @@ export class SnippetManagerService {
         if (!snippetId) {
             throw new Error("SnippetId is needed to show snippet's tests");
         }
-        const response = await axios.get(`http://localhost:8083/api/test/snippet/${snippetId}`, {
+        const response = await axios.get(`https://snippets-service-infra:8080/api/test/snippet/${snippetId}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -219,7 +219,7 @@ export class SnippetManagerService {
             throw new Error("SnippetId is needed to post a test case");
         }
         const response = await axios.post<TestResponse>(
-            `http://localhost:8083/api/test/snippet/${snippetId}`,
+            `https://snippets-service-infra:8080/api/test/snippet/${snippetId}`,
             testCase,
             {
                 headers: {
@@ -239,7 +239,7 @@ export class SnippetManagerService {
         if (!testId) {
             throw new Error("TestCaseId is needed to remove a test case");
         }
-        const response = await axios.delete(`http://localhost:8083/api/test/${testId}`, {
+        const response = await axios.delete(`https://snippets-service-infra:8080/api/test/${testId}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -260,7 +260,7 @@ export class SnippetManagerService {
         }
 
         const response = await axios.post(
-            `http://localhost:8083/api/test/${testCase.id}/run`,
+            `https://snippets-service-infra:8080/api/test/${testCase.id}/run`,
             { input: testCase.input, output: testCase.output },
             {
                 headers: {
@@ -282,7 +282,7 @@ export class SnippetManagerService {
 
         try {
             const response = await axios.post(
-                `http://localhost:8083/api/test/${snippetId}/all`,
+                `https://snippets-service-infra:8080/api/test/${snippetId}/all`,
                 {},
                 {
                     headers: {

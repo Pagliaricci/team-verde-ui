@@ -62,7 +62,7 @@ jobs:
             sudo docker rm snippets-ui-infra || true
             sudo docker rmi ghcr.io/teamverdeingsis/ui:latest || true
             sudo docker pull ghcr.io/teamverdeingsis/ui:latest
-            sudo docker compose up snippet-ui-infra -d
+            sudo docker compose up snippet-ui -d
 
 
 

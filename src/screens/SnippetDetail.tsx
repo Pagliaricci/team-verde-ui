@@ -13,7 +13,7 @@ import {
     Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { useUpdateSnippetById, useRunAllSnippetTests } from "../utils/queries.tsx"; // Added useRunAllSnippetTests
+import { useUpdateSnippetById, useRunAllSnippetTests } from "../utils/queries.tsx";
 import {
     useFormatSnippet,
     useGetSnippetById,
@@ -33,7 +33,7 @@ import {
     Share,
     StopRounded,
 } from "@mui/icons-material";
-import ReadMoreIcon from '@mui/icons-material/ReadMore';
+import ReadMoreIcon from "@mui/icons-material/ReadMore";
 import { queryClient } from "../App.tsx";
 
 type SnippetDetailProps = {
@@ -51,7 +51,7 @@ const DownloadButton = ({ snippet }: { snippet?: Snippet }) => {
             setFileUrl(url);
 
             return () => {
-                URL.revokeObjectURL(url); // Free memory
+                URL.revokeObjectURL(url);
             };
         }
     }, [snippet]);
@@ -83,13 +83,14 @@ const DownloadButton = ({ snippet }: { snippet?: Snippet }) => {
 export const SnippetDetail = (props: SnippetDetailProps) => {
     const { id, handleCloseModal } = props;
     const [code, setCode] = useState("");
-    const [errors, setErrors] = useState<string[]>([]); // Test error messages
-    const [testResults, setTestResults] = useState<string | null>(null); // Test results summary
+    const [errors, setErrors] = useState<string[]>([]);
+    const [testResults, setTestResults] = useState<string | null>(null);
     const [shareModalOpened, setShareModalOpened] = useState(false);
     const [deleteConfirmationModalOpen, setDeleteConfirmationModalOpen] =
         useState(false);
     const [testModalOpened, setTestModalOpened] = useState(false);
     const [runSnippet, setRunSnippet] = useState(false);
+    const [status, setStatus] = useState<{ message: string; success: boolean } | null>(null);
 
     const { data: snippet, isLoading } = useGetSnippetById(id);
     const { mutate: shareSnippet, isLoading: loadingShare } = useShareSnippet();
@@ -99,7 +100,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
         useUpdateSnippetById({
             onSuccess: () => queryClient.invalidateQueries(["snippet", id]),
         });
-    const { mutateAsync: runAllSnippetTests } = useRunAllSnippetTests(id); // Add run all tests logic
+    const { mutateAsync: runAllSnippetTests } = useRunAllSnippetTests(id);
 
     useEffect(() => {
         if (snippet?.content) {
@@ -113,59 +114,25 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
         }
     }, [formatSnippetData]);
 
-    async function handleRunAllTestsToast() {
-        try {
-            const testErrors = await runAllSnippetTests(id);
+    const handleUpdateSnippet = async () => {
+        if (!snippet || !snippet.id) return;
 
-            console.log("Test errors response:", testErrors); // Debug response
-
-            if (Array.isArray(testErrors)) {
-                if (testErrors.length === 0) {
-                    setTestResults("All tests passed successfully.");
-                } else {
-                    setTestResults(
-                        `Some tests failed:\n${testErrors.map(
-                            (error) => `Test: ${error.name} - ${error.error}`
-                        ).join("\n")}`
-                    );
-                }
-            } else if (typeof testErrors === "object" && testErrors !== null) {
-                const failedTests = Object.entries(testErrors)
-                    .filter(([testName, errors]) => errors.length > 0)
-                    .map(([testName, errors]) => `Test: ${testName} - ${errors.join(", ")}`)
-                    .join("\n");
-
-                if (failedTests) {
-                    setTestResults(`Some tests failed:\n${failedTests}`);
-                } else {
-                    setTestResults("All tests passed successfully.");
-                }
-            } else {
-                setTestResults("Unexpected test results format.");
-                console.error("Unexpected test results format:", testErrors);
+        updateSnippet(
+            { id: snippet.id, updateSnippet: { content: code } },
+            {
+                onSuccess: (response) => {
+                    setStatus({ message: response.message, success: response.message === "Snippet updated" });
+                    if (response.message === "Snippet updated") {
+                        setCode(response.updatedSnippet?.content || code);
+                        setTimeout(() => setStatus(null), 1000);
+                    }
+                },
+                onError: (error) => {
+                    setStatus({ message: error.message, success: false });
+                },
             }
-        } catch (err) {
-            setTestResults("Failed to run all tests. Please try again later.");
-            console.error("Error running tests:", err);
-        }
-    }
-
-
-
-    async function handleUpdateSnippet() {
-        setErrors([]);
-        setTestResults(null);
-
-        try {
-            await updateSnippet({ id: id, updateSnippet: { content: code } });
-
-            // Run tests after updating snippet
-            await handleRunAllTestsToast();
-        } catch (err) {
-            setTestResults("Error updating snippet. Please try again.");
-            console.error("Update error:", err);
-        }
-    }
+        );
+    };
 
     async function handleShareSnippet(userId: string) {
         shareSnippet({ snippetId: id, userId });
@@ -176,6 +143,11 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
             <Box width={"100%"} p={2} display={"flex"} justifyContent={"flex-end"}>
                 <CloseIcon style={{ cursor: "pointer" }} onClick={handleCloseModal} />
             </Box>
+            {status && (
+                <Box mt={2}>
+                    <Alert severity={status.success ? "success" : "error"}>{status.message}</Alert>
+                </Box>
+            )}
             {isLoading ? (
                 <>
                     <Typography fontWeight={"bold"} mb={2} variant="h4">
@@ -200,18 +172,11 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                             </IconButton>
                         </Tooltip>
                         <DownloadButton snippet={snippet} />
-                        <Tooltip title={runSnippet ? "Stop run" : "Run"}>
-                            <IconButton onClick={() => setRunSnippet(!runSnippet)}>
-                                {runSnippet ? <StopRounded /> : <PlayArrow />}
-                            </IconButton>
-                        </Tooltip>
                         <Tooltip title={"Format"}>
                             <IconButton
                                 onClick={() => {
                                     if (snippet?.id) {
                                         formatSnippet({ id: snippet.id, content: code });
-                                    } else {
-                                        console.error("Snippet ID is undefined");
                                     }
                                 }}
                                 disabled={isFormatLoading}
@@ -223,9 +188,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                             <IconButton
                                 color={"primary"}
                                 onClick={handleUpdateSnippet}
-                                disabled={
-                                    isUpdateSnippetLoading || snippet?.content === code
-                                }
+                                disabled={isUpdateSnippetLoading || snippet?.content === code}
                             >
                                 <Save />
                             </IconButton>
@@ -249,9 +212,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                                 value={code}
                                 padding={10}
                                 onValueChange={(code) => setCode(code)}
-                                highlight={(code) =>
-                                    highlight(code, languages.js, "javascript")
-                                }
+                                highlight={(code) => highlight(code, languages.js, "javascript")}
                                 style={{
                                     minHeight: "500px",
                                     fontFamily: "monospace",

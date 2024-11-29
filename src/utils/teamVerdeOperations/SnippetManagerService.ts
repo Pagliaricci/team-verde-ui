@@ -8,6 +8,7 @@ import { Rule } from "../../types/Rule";
 import {TestCase} from "../../types/TestCase.ts";
 import {TestCaseResult} from "../queries.tsx";
 import {TestResponse} from "../../hooks/TestResponse.ts";
+import {UpdateSnippetResponse} from "../../hooks/UpdateSnippetResponse.ts";
 
 const DELAY: number = 1000;
 
@@ -70,12 +71,12 @@ export class SnippetManagerService {
         });
     }
 
-    async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
+    async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<UpdateSnippetResponse> {
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error("No token found");
         }
-        return await updateSnippetFunction(id, updateSnippet, token) as Snippet;
+        return await updateSnippetFunction(id, updateSnippet, token);
     }
 
     async deleteSnippet(id: string): Promise<string> {

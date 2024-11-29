@@ -9,6 +9,7 @@ import {Rule} from "../types/Rule.ts";
 import {useEffect} from "react";
 import {useAuth0} from "@auth0/auth0-react";
 import {SnippetManagerService} from "./teamVerdeOperations/SnippetManagerService.ts";
+import {UpdateSnippetResponse} from "../hooks/UpdateSnippetResponse.ts";
 
 
 export const useSnippetsOperations = () => {
@@ -45,16 +46,14 @@ export const useCreateSnippet = ({ onSuccess, onError }: { onSuccess: () => void
     );
 };
 
-export const useUpdateSnippetById = ({onSuccess}: { onSuccess: () => void }): UseMutationResult<Snippet, Error, {
-    id: string;
-    updateSnippet: UpdateSnippet
-}> => {
-    return useMutation<Snippet, Error, { id: string; updateSnippet: UpdateSnippet }>(
-        ({id, updateSnippet}) => realSnippetOperations.updateSnippetById(id, updateSnippet), {
+export const useUpdateSnippetById = ({ onSuccess }: { onSuccess: () => void }): UseMutationResult<UpdateSnippetResponse, Error, { id: string; updateSnippet: UpdateSnippet }> => {
+    return useMutation<UpdateSnippetResponse, Error, { id: string; updateSnippet: UpdateSnippet }>(
+        ({ id, updateSnippet }) => realSnippetOperations.updateSnippetById(id, updateSnippet), {
             onSuccess,
         }
     );
 };
+
 
 export const useDeleteSnippet = ({onSuccess}: { onSuccess: () => void }) => {
     return useMutation<string, Error, string>(
@@ -143,7 +142,6 @@ export const useFormatSnippet = () => {
         ({id, content}) => realSnippetOperations.formatSnippet(id, content)
     );
 }
-
 
 export const useGetFileTypes = () => {
     return useQuery<FileType[], Error>('fileTypes', () => snippetOperations.getFileTypes());

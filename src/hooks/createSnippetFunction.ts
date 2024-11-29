@@ -6,7 +6,7 @@ export const createSnippetFunction = async (snippet: CreateSnippet, token: strin
 
     try {
         const response = await axios.post(
-            'http://snippets-service-infra:8080/snippets/create',
+            'https://snippets-service-infra:8080/snippets/create',
             snippet,
             {
                 headers: {

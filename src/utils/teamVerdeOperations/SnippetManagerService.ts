@@ -7,6 +7,8 @@ import axios from "axios";
 import { Rule } from "../../types/Rule";
 import {TestCase} from "../../types/TestCase.ts";
 import {TestCaseResult} from "../queries.tsx";
+import {TestResponse} from "../../hooks/TestResponse.ts";
+import {UpdateSnippetResponse} from "../../hooks/UpdateSnippetResponse.ts";
 
 const DELAY: number = 1000;
 
@@ -69,12 +71,12 @@ export class SnippetManagerService {
         });
     }
 
-    async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
+    async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<UpdateSnippetResponse> {
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error("No token found");
         }
-        return await updateSnippetFunction(id, updateSnippet, token) as Snippet;
+        return await updateSnippetFunction(id, updateSnippet, token);
     }
 
     async deleteSnippet(id: string): Promise<string> {
@@ -208,25 +210,26 @@ export class SnippetManagerService {
         return Array.isArray(response.data) ? response.data : [];
     }
 
-    async postTestCase(testCase: Partial<TestCase>, snippetId: string): Promise<TestCase> {
-    console.log(snippetId)
-    const token = localStorage.getItem("token");
-    if (!token) {
-        throw new Error("No token found");
+    async postTestCase(testCase: Partial<TestCase>, snippetId: string): Promise<TestResponse> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
+        if (!snippetId) {
+            throw new Error("SnippetId is needed to post a test case");
+        }
+        const response = await axios.post<TestResponse>(
+            `http://localhost:8083/api/test/snippet/${snippetId}`,
+            testCase,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        console.log(response.data);
+        return response.data;
     }
-    if (!snippetId) {
-        throw new Error("SnippetId is needed to post a test case");
-    }
-    if (!testCase.input || !testCase.output) {
-        throw new Error("Input and output are required for a test case");
-    }
-    const response = await axios.post(`http://localhost:8083/api/test/snippet/${snippetId}`, testCase, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    return response.data;
-}
 
     async removeTestCase(testId: string): Promise<string> {
         const token = localStorage.getItem("token");
@@ -246,6 +249,7 @@ export class SnippetManagerService {
     }
 
     async testSnippet(testCase: Partial<TestCase>): Promise<TestCaseResult> {
+        console.log("Sending to backend:", { input: testCase.input, output: testCase.output });
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error("No token found");
@@ -270,19 +274,33 @@ export class SnippetManagerService {
     }
 
 
-    async runAllTests(snippetId: string): Promise<string[]> {
+    async runAllTests(snippetId: string): Promise<any> {
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error("No token found");
         }
-        const response = await axios.post(`http://localhost:8083/api/test/${snippetId}/all`,{
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        if(response.status != 200){
-            throw new Error("Failed to run all tests");
+
+        try {
+            const response = await axios.post(
+                `http://localhost:8083/api/test/${snippetId}/all`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (response.status === 200) {
+                return response.data; // Ensure this matches the backend response
+            } else {
+                throw new Error(`Unexpected response status: ${response.status}`);
+            }
+        } catch (error: any) {
+            console.error("Error in runAllTests:", error.response || error.message);
+            throw new Error(error.response?.data?.message || "Failed to run all tests");
         }
-        return response.data as string[];
     }
+
 }

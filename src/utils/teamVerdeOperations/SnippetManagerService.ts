@@ -55,7 +55,7 @@ export class SnippetManagerService {
         if (!token) {
             throw new Error("No token found");
         }
-        const userSnippets = await SnippetManagerService.fetchAllUserSnippets("USER_ID"); // Reemplazar con el ID del usuario real
+        const userSnippets = await SnippetManagerService.fetchAllUserSnippets("USER_ID");
         const startIndex = page * pageSize;
         const endIndex = startIndex + pageSize;
 

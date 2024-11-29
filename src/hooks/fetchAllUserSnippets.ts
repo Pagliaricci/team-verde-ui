@@ -3,7 +3,7 @@ import { Snippet } from '../utils/snippet.ts';
 
 export const fetchAllUserSnippets = async (id: string, token: string): Promise<Snippet[] | []> => {
     try {
-        const response = await axios.get('http://localhost:8083/snippets/', {
+        const response = await axios.get('http://snippets-service-infra:8080/snippets/', {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

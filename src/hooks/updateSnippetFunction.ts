@@ -8,7 +8,7 @@ export const updateSnippetFunction = async (
     token: string
 ): Promise<UpdateSnippetResponse> => {
     try {
-        const response = await axios.put(`http://localhost:8083/snippets/update/${id}`, updatedSnippet, {
+        const response = await axios.put(`http://snippets-service-infra:8080/snippets/update/${id}`, updatedSnippet, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",

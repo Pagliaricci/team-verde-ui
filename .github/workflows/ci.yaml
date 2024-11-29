@@ -42,3 +42,4 @@ jobs:
           tags: |
             ghcr.io/teamverdeingsis/ui:${{ github.ref_name }}
             ghcr.io/teamverdeingsis/ui:latest
+

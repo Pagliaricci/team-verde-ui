@@ -146,5 +146,5 @@ export const useFormatSnippet = () => {
 
 
 export const useGetFileTypes = () => {
-    return useQuery<FileType[], Error>('fileTypes', () => snippetOperations.getFileTypes());
+    return useQuery<FileType[], Error>('fileTypes', () => realSnippetOperations.getFileTypes());
 }

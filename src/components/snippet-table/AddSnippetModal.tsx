@@ -92,7 +92,9 @@ export const AddSnippetModal = ({ open, onClose, defaultSnippet }: { open: boole
                     sx={{ width: '50%' }}
                 >
                     {fileTypes?.map(x => (
-                        <MenuItem key={x.language} value={x.language}>{capitalize(x.language)}</MenuItem>
+                        <MenuItem
+                            data-testid="menu-option-printscript"
+                            key={x.language} value={x.language}>{capitalize(x.language)}</MenuItem>
                     ))}
                 </Select>
             </Box>

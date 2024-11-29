@@ -8,6 +8,7 @@ import { Rule } from "../../types/Rule";
 import {TestCase} from "../../types/TestCase.ts";
 import {TestCaseResult} from "../queries.tsx";
 import {TestResponse} from "../../hooks/TestResponse.ts";
+import { FileType } from "../../types/FileType.ts";
 
 const DELAY: number = 1000;
 
@@ -302,4 +303,12 @@ export class SnippetManagerService {
         }
     }
 
+    getFileTypes(): FileType[] {
+    return [
+        {
+            language: "printscript",
+            extension: "prs"
+        }
+    ];
+}
 }

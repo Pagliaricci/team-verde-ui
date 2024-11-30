@@ -14,7 +14,7 @@ export const createSnippetFunction = async (snippet: CreateSnippet, token: strin
                 },
             }
         );
-        console.log("Received response from backend:", response.data);  // Log de la respuesta del backend
+        console.log("Received response from backend:", response.data);
         if(response.data.message != ""){
             return response.data.message;
         }

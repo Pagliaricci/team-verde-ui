@@ -143,7 +143,9 @@ export class SnippetManagerService {
     }
 
     async getLintingRules(): Promise<Rule[]> {
+        console.log("Getting linting rules checkpoint 1");
         const token = localStorage.getItem("token");
+        console.log("Getting linting rules checkpoint 2, token: ", token);
         if (!token) {
             throw new Error("No token found");
         }
@@ -152,6 +154,7 @@ export class SnippetManagerService {
                     Authorization: `Bearer ${token}`,
                 },
             });
+        console.log("Getting linting rules checkpoint 3, response: ", response.data);
         return response.data as Promise<Rule[]>;
     }
 

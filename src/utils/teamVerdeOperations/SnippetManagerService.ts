@@ -120,7 +120,7 @@ export class SnippetManagerService {
         if (!token) {
             throw new Error("No token found");
         }
-        const response = await axios.get('https://teamverde.westus2.cloudapp.azure.com/getFormattingRules', {
+        const response = await axios.get('https://teamverde.westus2.cloudapp.azure.com/snippets/getFormattingRules', {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -149,7 +149,7 @@ export class SnippetManagerService {
         if (!token) {
             throw new Error("No token found");
         }
-        const response = await axios.get('https://teamverde.westus2.cloudapp.azure.com/getLintingRules', {
+        const response = await axios.get('https://teamverde.westus2.cloudapp.azure.com/snippets/getLintingRules', {
             headers: {
                     Authorization: `Bearer ${token}`,
                 },

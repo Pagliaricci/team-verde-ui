@@ -13,24 +13,24 @@ type ShareSnippetModalProps = {
 
 export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
   const { open, onClose, onShare, loading } = props;
-  const [name, setName] = useState<string>(""); // Current input value
-  const [debouncedName, setDebouncedName] = useState<string>(""); // Delayed API input
-  const [selectedUser, setSelectedUser] = useState<User | null>(null); // Selected user
+  const [name, setName] = useState<string>(""); // Input del usuario
+  const [debouncedName, setDebouncedName] = useState<string>(""); // Entrada retrasada para la API
+  const [selectedUser, setSelectedUser] = useState<User | null>(null); // Usuario seleccionado
 
-  // Fetch users from API
+  // Obtener usuarios desde la API
   const { data, isLoading } = useGetUsers(debouncedName, 0, 10);
 
-  // Debounce input to reduce API calls
+  // Actualizar `debouncedName` con un retraso
   useEffect(() => {
     const debounceTimeout = setTimeout(() => {
-      setDebouncedName(name);
-    }, 300); // Debounce time: 300ms
+      setDebouncedName(name.trim());
+    }, 300); // Ajuste de 300ms
     return () => clearTimeout(debounceTimeout);
   }, [name]);
 
-  // Handle user selection
-  const handleSelectUser = (newValue: User | null) => {
-    setSelectedUser(newValue);
+  // Manejo de selección de usuario
+  const handleSelectUser = (user: User | null) => {
+    setSelectedUser(user);
   };
 
   return (
@@ -43,22 +43,23 @@ export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
             <TextField
               {...params}
               label="Search users"
-              onChange={(e) => setName(e.target.value)} // Update input value
+              value={name}
+              onChange={(e) => setName(e.target.value)} // Actualizar valor de entrada
             />
           )}
-          options={data?.users || []} // API response
-          getOptionLabel={(option) => option.nickname} // Use nickname for display
+          options={data?.users || []} // Opciones dinámicas desde la API
+          getOptionLabel={(option) => option.nickname} // Mostrar `nickname`
           isOptionEqualToValue={(option, value) => option.user_id === value.user_id}
-          loading={isLoading} // Show spinner during loading
-          onChange={(_, newValue) => handleSelectUser(newValue)} // Update selected user
+          loading={isLoading} // Mostrar estado de carga
+          onChange={(_, newValue) => handleSelectUser(newValue)} // Guardar usuario seleccionado
         />
         <Box mt={4} display="flex" justifyContent="flex-end">
           <Button onClick={onClose} variant="outlined">
             Cancel
           </Button>
           <Button
-            disabled={!selectedUser || loading} // Disable if no user selected or loading
-            onClick={() => selectedUser && onShare(selectedUser.id)} // Trigger share
+            disabled={!selectedUser || loading} // Deshabilitar si no hay usuario seleccionado
+            onClick={() => selectedUser && onShare(selectedUser.user_id)} // Compartir snippet
             sx={{ ml: 2 }}
             variant="contained"
           >

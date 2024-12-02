@@ -68,7 +68,7 @@ export const useDeleteSnippet = ({onSuccess}: { onSuccess: () => void }) => {
 export const useGetUsers = (name: string = "", page: number = 0, pageSize: number = 10) => {
     const token = localStorage.getItem("token");
     return useQuery(['users', name, page, pageSize], async () => {
-        const response = await axios.get(`https://teamverde.westus2.cloudapp.azure.com/api/auth0/users`, {
+        const response = await axios.get(`https://teamverde.westus2.cloudapp.azure.com/snippets/api/auth0/users`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

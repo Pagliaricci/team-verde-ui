@@ -26,6 +26,7 @@ const realSnippetOperations: SnippetManagerService = new SnippetManagerService()
 
 
 
+
 export const useGetSnippets = (page: number = 0, pageSize: number = 10, snippetName?: string) => {
     useSnippetsOperations()
     return useQuery<PaginatedSnippets, Error>(['listSnippets', page, pageSize, snippetName], () => realSnippetOperations.listSnippetDescriptors(page, pageSize), {});

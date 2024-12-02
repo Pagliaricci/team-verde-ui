@@ -146,3 +146,16 @@ export const useFormatSnippet = () => {
 export const useGetFileTypes = () => {
     return useQuery<FileType[], Error>('fileTypes', () => snippetOperations.getFileTypes());
 }
+export const useCheckIfOwner = (email: string | undefined) => {
+    const {user} = useAuth0();
+    if (!email || !user) return false;
+    return user.email === email
+}
+
+export const useRunAllTests = (id: string) => {
+    const snippetOperations = realSnippetOperations;
+
+    return useMutation<Map<string, string[]>, Error>(
+        () => snippetOperations.runAllTests(id)
+    );
+};

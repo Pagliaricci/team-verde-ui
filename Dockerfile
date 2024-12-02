@@ -20,7 +20,6 @@ ENV VITE_AUTH0_CLIENT_ID=${VITE_AUTH0_CLIENT_ID}
 ENV VITE_AUTH0_PASSWORD=${VITE_AUTH0_PASSWORD}
 ENV VITE_AUTH0_USERNAME=${VITE_AUTH0_USERNAME}
 
-# Instala las dependencias
 RUN npm install
 
 # Copia todo el código fuente

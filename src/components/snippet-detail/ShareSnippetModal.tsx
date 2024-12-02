@@ -47,8 +47,8 @@ export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
               onChange={(e) => setName(e.target.value)} // Actualizar valor de entrada
             />
           )}
-          options={data?.users || []} // Opciones dinámicas desde la API
-          getOptionLabel={(option) => option.nickname} // Mostrar `nickname`
+          options={data || []} // Opciones dinámicas desde la API
+          getOptionLabel={(option) => option.nickname || ""} // Mostrar `nickname`
           isOptionEqualToValue={(option, value) => option.user_id === value.user_id}
           loading={isLoading} // Mostrar estado de carga
           onChange={(_, newValue) => handleSelectUser(newValue)} // Guardar usuario seleccionado

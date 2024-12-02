@@ -7,14 +7,15 @@ import axios from "axios";
 import { Rule } from "../../types/Rule";
 import { FakeSnippetStore } from '../mock/fakeSnippetStore';
 import {toast} from "react-toastify";
+import {TestCase} from "../../types/TestCase.ts";
+import {TestCaseResult} from "../queries.tsx";
+import {TestResponse} from "../../hooks/TestResponse.ts";
+import {UpdateSnippetResponse} from "../../hooks/UpdateSnippetResponse.ts";
 
 const DELAY: number = 1000;
 
 export class SnippetManagerService {
 
-    private readonly fakeStore = new FakeSnippetStore();
-    private readonly defaultLintingRules = this.fakeStore.getLintingRules();
-    private readonly defaultFormattingRules = this.fakeStore.getFormatRules();
 
     async createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
         const token = localStorage.getItem("token");
@@ -39,6 +40,7 @@ export class SnippetManagerService {
 
     async fetchSnippetById(id: string): Promise<Snippet> {
         try {
+            localStorage.setItem("snippetId", id);
             const token = localStorage.getItem("token");
             if (!token) {
                 throw new Error("No token found");
@@ -55,7 +57,7 @@ export class SnippetManagerService {
         if (!token) {
             throw new Error("No token found");
         }
-        const userSnippets = await SnippetManagerService.fetchAllUserSnippets("USER_ID"); // Reemplazar con el ID del usuario real
+        const userSnippets = await SnippetManagerService.fetchAllUserSnippets("USER_ID");
         const startIndex = page * pageSize;
         const endIndex = startIndex + pageSize;
 
@@ -71,12 +73,12 @@ export class SnippetManagerService {
         });
     }
 
-    async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
+    async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<UpdateSnippetResponse> {
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error("No token found");
         }
-        return await updateSnippetFunction(id, updateSnippet, token) as Snippet;
+        return await updateSnippetFunction(id, updateSnippet, token);
     }
 
     async deleteSnippet(id: string): Promise<string> {
@@ -85,7 +87,7 @@ export class SnippetManagerService {
             if (!token) {
                 throw new Error("No token found");
             }
-            await axios.delete(`http://localhost:8083/snippets/${id}`, {
+            await axios.delete(`https://teamverde.westus2.cloudapp.azure.com/snippets/delete/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -104,8 +106,7 @@ export class SnippetManagerService {
                 throw new Error("No token found");
             }
 
-            // Obtener los detalles del usuario destinatario desde el backend
-            const userResponse = await axios.get(`http://localhost:8083/users/${userId}`, {
+            const userResponse = await axios.get(`https://teamverde.westus2.cloudapp.azure.com/snippets/share`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -157,36 +158,27 @@ export class SnippetManagerService {
         }
     }
 
-
-
-    getFormattingRules(): Promise<Rule[]> {
+    async getFormattingRules(): Promise<Rule[]> {
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error("No token found");
         }
-
-        return axios.get('http://localhost:8083/snippets/getFormattingRules', {
+        const response = await axios.get('https://teamverde.westus2.cloudapp.azure.com/snippets/getFormattingRules', {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-        }).then(response => response.data)
-            .catch(async () => {
-                // Fallback: create default linting rules
-                return axios.post('http://localhost:8083/snippets/createFormatRules', { rules: this.defaultFormattingRules }, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }).then(response => response.data);
-            });
+        });
+        return response.data as Promise<Rule[]>;
     }
 
-    modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
+    async modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
+        console.log(newRules);
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error("No token found");
         }
 
-        return axios.post('http://localhost:8080/modifyFormattingRules', { formattingRules: newRules }, {
+        return await axios.post('https://teamverde.westus2.cloudapp.azure.com/snippets/modifyFormattingRules', newRules, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -194,46 +186,167 @@ export class SnippetManagerService {
     }
 
     async getLintingRules(): Promise<Rule[]> {
+        console.log("Getting linting rules checkpoint 1");
         const token = localStorage.getItem("token");
+        console.log("Getting linting rules checkpoint 2, token: ", token);
         if (!token) {
             throw new Error("No token found");
         }
-        const response = await axios.get('http://localhost:8083/snippets/getLintingRules', {
+        const response = await axios.get('https://teamverde.westus2.cloudapp.azure.com/snippets/getLintingRules', {
             headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
+        console.log("Getting linting rules checkpoint 3, response: ", response.data);
+        return response.data as Promise<Rule[]>;
+    }
 
-            console.log("Fetched linting rules:", response.data);
-            if (response.data.length == 0) {
-                const response_1 = await axios.post('http://localhost:8083/snippets/createLintingRules',     { rules: JSON.stringify(this.defaultLintingRules) }, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                console.log("Default linting rules created:", response_1.data);
-                return response_1.data;
-            }
-            return response.data;
-        }
-
-    modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
+    async modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
+        console.log(newRules);
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error("No token found");
         }
 
-        return axios.post('http://localhost:8083/modifyLintingRules', { lintingRules: newRules }, {
+        return await axios.post('https://teamverde.westus2.cloudapp.azure.com/snippets/modifyLintingRules', newRules, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         }).then(response => response.data);
     }
-    async runAllTests(id: string): Promise<Map<string, string[]>> {
-        const response = await axios.post(`/tests/${id}/all`);
-        if (response.status !== 200) {
-            throw new Error("Failed to run all tests");
+    async formatSnippet(snippetId: string, snippetContent: string): Promise<string> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
         }
-        return response.data as Map<string, string[]>;
+
+        const formattingRequest = {
+            snippetId, // Clave: snippetId
+            content: snippetContent, // Clave: content
+        };
+
+        return axios
+            .post("https://teamverde.westus2.cloudapp.azure.com/snippets/formatSnippet", formattingRequest, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json", // Asegúrate de usar JSON como formato
+                },
+            })
+            .then(response => response.data)
+            .catch(error => {
+                console.error("Error formatting snippet:", error);
+                throw error;
+            });
     }
+
+
+    async getTestCases(snippetId: string): Promise<TestCase[]> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
+        if (!snippetId) {
+            throw new Error("SnippetId is needed to show snippet's tests");
+        }
+        const response = await axios.get(`https://teamverde.westus2.cloudapp.azure.com/snippets/api/test/snippet/${snippetId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return Array.isArray(response.data) ? response.data : [];
+    }
+
+    async postTestCase(testCase: Partial<TestCase>, snippetId: string): Promise<TestResponse> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
+        if (!snippetId) {
+            throw new Error("SnippetId is needed to post a test case");
+        }
+        const response = await axios.post<TestResponse>(
+            `https://teamverde.westus2.cloudapp.azure.com/snippets/api/test/snippet/${snippetId}`,
+            testCase,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        console.log(response.data);
+        return response.data;
+    }
+
+    async removeTestCase(testId: string): Promise<string> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
+        if (!testId) {
+            throw new Error("TestCaseId is needed to remove a test case");
+        }
+        const response = await axios.delete(`https://teamverde.westus2.cloudapp.azure.com/snippets/api/test/${testId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        console.log(`test with id: ${testId} removed`)
+        return response.data;
+    }
+
+    async testSnippet(testCase: Partial<TestCase>): Promise<TestCaseResult> {
+        console.log("Sending to backend:", { input: testCase.input, output: testCase.output });
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
+
+        if (!testCase.id) {
+            throw new Error("Test ID is required to run a test");
+        }
+
+        const response = await axios.post(
+            `https://teamverde.westus2.cloudapp.azure.com/snippets/api/test/${testCase.id}/run`,
+            { input: testCase.input, output: testCase.output },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+
+        console.log(response.data as TestCaseResult)
+        return response.data as TestCaseResult;
+    }
+
+
+    async runAllTests(snippetId: string): Promise<any> {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No token found");
+        }
+
+        try {
+            const response = await axios.post(
+                `https://teamverde.westus2.cloudapp.azure.com/snippets/api/test/${snippetId}/all`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (response.status === 200) {
+                return response.data; // Ensure this matches the backend response
+            } else {
+                throw new Error(`Unexpected response status: ${response.status}`);
+            }
+        } catch (error: any) {
+            console.error("Error in runAllTests:", error.response || error.message);
+            throw new Error(error.response?.data?.message || "Failed to run all tests");
+        }
+    }
+
 }

@@ -22,5 +22,5 @@ export function loginViaAuth0Ui(username: string, password: string) {
     );
 
     // Ensure that Auth0 has redirected back to the app
-    cy.url().should('eq', 'http://localhost:5173/');
+    cy.url().should('eq', 'https://teamverde.westus2.cloudapp.azure.com/');
 }

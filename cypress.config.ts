@@ -21,6 +21,6 @@ export default defineConfig({
       return config;
     },
     experimentalStudio: true,
-    baseUrl: process.env.VITE_FRONTEND_URL || "http://localhost:5173", // Fallback to default URL
+    baseUrl: process.env.VITE_FRONTEND_URL || "https://teamverde.westus2.cloudapp.azure.com", // Fallback to default URL
   },
 });

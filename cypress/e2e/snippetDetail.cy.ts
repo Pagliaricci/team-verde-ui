@@ -1,18 +1,19 @@
-import {AUTH0_PASSWORD, AUTH0_USERNAME, BACKEND_URL} from "../../src/utils/constants";
+const backendUrl = Cypress.env('VITE_BACKEND_URL');
+
 import {FakeSnippetStore} from "../../src/utils/mock/fakeSnippetStore";
 
 describe('Add snippet tests', () => {
   const fakeStore = new FakeSnippetStore()
-  beforeEach(() => {
-    // cy.loginToAuth0(
-    //     AUTH0_USERNAME,
-    //     AUTH0_PASSWORD
-    // )
-    cy.intercept('GET', BACKEND_URL+"/snippets/*", {
+    beforeEach(() => {
+      cy.loginToAuth0(
+          Cypress.env("VITE_AUTH0_USERNAME"),
+          Cypress.env("VITE_AUTH0_PASSWORD")
+      )
+    cy.intercept('GET', backendUrl+"/snippets/*", {
       statusCode: 201,
       body: fakeStore.getSnippetById("1"),
     }).as("getSnippetById")
-    cy.intercept('GET', BACKEND_URL+"/snippets").as("getSnippets")
+    cy.intercept('GET', backendUrl+"/snippets").as("getSnippets")
 
     cy.visit("/")
 

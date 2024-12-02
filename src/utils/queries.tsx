@@ -155,7 +155,7 @@ export const useFormatSnippet = () => {
 }
 
 export const useGetFileTypes = () => {
-    return useQuery<FileType[], Error>('fileTypes', () => snippetOperations.getFileTypes());
+    return useQuery<FileType[], Error>('fileTypes', () => realSnippetOperations.getFileTypes());
 }
 export const useCheckIfOwner = (email: string | undefined) => {
     const {user} = useAuth0();

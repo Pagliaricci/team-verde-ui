@@ -10,6 +10,7 @@ import {TestCase} from "../../types/TestCase.ts";
 import {TestCaseResult} from "../queries.tsx";
 import {TestResponse} from "../../hooks/TestResponse.ts";
 import {UpdateSnippetResponse} from "../../hooks/UpdateSnippetResponse.ts";
+import { FileType } from "../../types/FileType.ts";
 
 const DELAY: number = 1000;
 
@@ -328,4 +329,12 @@ export class SnippetManagerService {
         }
     }
 
+    getFileTypes(): FileType[] {
+    return [
+        {
+            language: "printscript",
+            extension: "prs"
+        }
+    ];
+}
 }

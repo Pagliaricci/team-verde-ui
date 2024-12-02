@@ -1,5 +1,5 @@
-export const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL ?? "http://localhost:5173"
-export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? "http://localhost:8083/"
+export const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL ?? "https://teamverde.westus2.cloudapp.azure.com"
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? "https://teamverde.westus2.cloudapp.azure.com"
 export const AUTH0_DOMAIN = import.meta.env.VITE_AUTH0_DOMAIN ?? ""
 export const AUTH0_AUDIENCE = import.meta.env.VITE_AUTH0_AUDIENCE ?? ""
 export const AUTH0_CLIENT_ID = import.meta.env.VITE_AUTH0_CLIENT_ID ?? ""

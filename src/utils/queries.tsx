@@ -1,7 +1,6 @@
 import {useMutation, UseMutationResult, useQuery} from 'react-query';
 import {CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet} from './snippet.ts';
 import {SnippetOperations} from "./snippetOperations.ts";
-import {PaginatedUsers} from "./users.ts";
 import {FakeSnippetOperations} from "./mock/fakeSnippetOperations.ts";
 import {TestCase} from "../types/TestCase.ts";
 import {FileType} from "../types/FileType.ts";
@@ -10,6 +9,7 @@ import {useEffect} from "react";
 import {useAuth0} from "@auth0/auth0-react";
 import {SnippetManagerService} from "./teamVerdeOperations/SnippetManagerService.ts";
 import {UpdateSnippetResponse} from "../hooks/UpdateSnippetResponse.ts";
+import axios from "axios";
 
 
 export const useSnippetsOperations = () => {
@@ -64,15 +64,26 @@ export const useDeleteSnippet = ({onSuccess}: { onSuccess: () => void }) => {
     );
 }
 
+
 export const useGetUsers = (name: string = "", page: number = 0, pageSize: number = 10) => {
-    return useQuery<PaginatedUsers, Error>(['users', name, page, pageSize], () => snippetOperations.getUserFriends(name, page, pageSize));
+    const token = localStorage.getItem("token");
+    return useQuery(['users', name, page, pageSize], async () => {
+        const response = await axios.get(`https://teamverde.westus2.cloudapp.azure.com/api/auth0/users`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            params: { nickname: name, page, perPage: pageSize },
+        });
+        return response.data;
+    });
 };
 
 export const useShareSnippet = () => {
     return useMutation<Snippet, Error, { snippetId: string; userId: string }>(
-        ({snippetId, userId}) => snippetOperations.shareSnippet(snippetId, userId)
+        ({snippetId, userId}) => realSnippetOperations.shareSnippet(snippetId, userId)
     );
 };
+
 
 export const useGetTestCases = (snippetId: string) => {
     return useQuery<TestCase[] | undefined, Error>(

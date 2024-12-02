@@ -5,7 +5,6 @@ import { createSnippetFunction } from "../../hooks/createSnippetFunction";
 import { updateSnippetFunction } from "../../hooks/updateSnippetFunction";
 import axios from "axios";
 import { Rule } from "../../types/Rule";
-import { FakeSnippetStore } from '../mock/fakeSnippetStore';
 import {toast} from "react-toastify";
 import {TestCase} from "../../types/TestCase.ts";
 import {TestCaseResult} from "../queries.tsx";

@@ -10,6 +10,7 @@ import {useAuth0} from "@auth0/auth0-react";
 import {SnippetManagerService} from "./teamVerdeOperations/SnippetManagerService.ts";
 import {UpdateSnippetResponse} from "../hooks/UpdateSnippetResponse.ts";
 import axios from "axios";
+import {TestResponse} from "../hooks/TestResponse.ts";
 
 
 export const useSnippetsOperations = () => {
@@ -94,7 +95,7 @@ export const useGetTestCases = (snippetId: string) => {
 };
 
 export const usePostTestCase = (snippetId: string) => {
-    return useMutation<TestCase, Error, Partial<TestCase>>(
+    return useMutation<TestResponse, Error, Partial<TestCase>>(
         (tc) => realSnippetOperations.postTestCase(tc, snippetId)
     );
 };

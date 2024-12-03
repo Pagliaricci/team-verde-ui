@@ -6,7 +6,6 @@ import { useGetTestCases, usePostTestCase, useRemoveTestCase } from "../../utils
 import { TestResponse } from "../../hooks/TestResponse.ts";
 import { TabPanel } from "./TabPanel.tsx";
 import { queryClient } from "../../App.tsx";
-import { TestCase } from "../../types/TestCase.ts";
 
 type TestSnippetModalProps = {
     open: boolean;
@@ -27,11 +26,11 @@ export const TestSnippetModal = ({ open, onClose, snippetId }: TestSnippetModalP
     const [message, setMessage] = useState<string | null>(null);
     const [messageStatus, setMessageStatus] = useState<"success" | "error" | null>(null);
 
-    const handleAddTestCase = async (testCase: Partial<TestCase>) => {
+    const handleAddTestCase = async (testResponse: Partial<TestResponse>) => {
         const sanitizedTestCase = {
-            ...testCase,
-            input: testCase.input && testCase.input.length > 0 ? testCase.input : [],
-            output: testCase.output && testCase.output.length > 0 ? testCase.output : [],
+            ...testResponse,
+            input: testResponse.input && testResponse.input.length > 0 ? testResponse.input : [],
+            output: testResponse.output && testResponse.output.length > 0 ? testResponse.output : [],
         };
 
         try {

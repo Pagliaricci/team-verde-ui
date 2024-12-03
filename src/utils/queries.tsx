@@ -1,7 +1,5 @@
 import {useMutation, UseMutationResult, useQuery} from 'react-query';
 import {CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet} from './snippet.ts';
-import {SnippetOperations} from "./snippetOperations.ts";
-import {FakeSnippetOperations} from "./mock/fakeSnippetOperations.ts";
 import {TestCase} from "../types/TestCase.ts";
 import {FileType} from "../types/FileType.ts";
 import {Rule} from "../types/Rule.ts";
@@ -21,7 +19,6 @@ export const useSnippetsOperations = () => {
             })
     });}
 
-const snippetOperations: SnippetOperations = new FakeSnippetOperations(); // TODO: Replace with your implementation
 const realSnippetOperations: SnippetManagerService = new SnippetManagerService();
 
 

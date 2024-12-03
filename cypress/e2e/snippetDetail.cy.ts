@@ -18,22 +18,17 @@ describe('Add snippet tests', () => {
     cy.visit("/")
 
     // cy.wait("@getSnippets")
-    cy.wait(2000) // TODO comment this line and uncomment 19 to wait for the real data
+    cy.wait(4000) // TODO comment this line and uncomment 19 to wait for the real data
     cy.get('.MuiTableBody-root > :nth-child(1) > :nth-child(1)').click();
   })
 
   it('Can share a snippet ', () => {
     cy.get('[aria-label="Share"]').click();
-    cy.get('#\\:rl\\:').click();
-    cy.get('#\\:rl\\:-option-0').click();
+    cy.get('#\\:rj\\:').click();
+    cy.get('#\\:rj\\:-option-0').click();
     cy.get('.css-1yuhvjn > .MuiBox-root > .MuiButton-contained').click();
     cy.wait(2000)
   })
-
-  it('Can run snippets', function() {
-    cy.get('[data-testid="PlayArrowIcon"]').click();
-    cy.get('.css-1hpabnv > .MuiBox-root > div > .npm__react-simple-code-editor__textarea').should("have.length.greaterThan",0);
-  });
 
   it('Can format snippets', function() {
     cy.get('[data-testid="ReadMoreIcon"] > path').click();

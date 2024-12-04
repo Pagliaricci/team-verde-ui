@@ -1,18 +1,15 @@
 import axios from 'axios';
 import { CreateSnippet, Snippet } from '../utils/snippet';
+import api from "../utils/teamVerdeOperations/api.ts";
 
 export const createSnippetFunction = async (snippet: CreateSnippet, token: string): Promise<Snippet | string> => {
     console.log("Sending createSnippet request:", snippet);  // Log del objeto enviado
 
     try {
-        const response = await axios.post(
-            'https://teamverde.westus2.cloudapp.azure.com/snippets/create',
+        const response = await api.post(
+            'snippets/create',
             snippet,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
+
         );
         console.log("Received response from backend:", response.data);
         if(response.data.message != ""){

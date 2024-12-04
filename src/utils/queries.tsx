@@ -7,8 +7,8 @@ import {useEffect} from "react";
 import {useAuth0} from "@auth0/auth0-react";
 import {SnippetManagerService} from "./teamVerdeOperations/SnippetManagerService.ts";
 import {UpdateSnippetResponse} from "../hooks/UpdateSnippetResponse.ts";
-import axios from "axios";
 import {TestResponse} from "../hooks/TestResponse.ts";
+import api from "./teamVerdeOperations/api.ts";
 
 
 export const useSnippetsOperations = () => {
@@ -64,12 +64,8 @@ export const useDeleteSnippet = ({onSuccess}: { onSuccess: () => void }) => {
 
 
 export const useGetUsers = (name: string = "", page: number = 0, pageSize: number = 10) => {
-    const token = localStorage.getItem("token");
     return useQuery(['users', name, page, pageSize], async () => {
-        const response = await axios.get(`https://teamverde.westus2.cloudapp.azure.com/snippets/api/auth0/users`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+        const response = await api.get(`snippets/api/auth0/users`, {
             params: { nickname: name, page, perPage: pageSize },
         });
         return response.data;

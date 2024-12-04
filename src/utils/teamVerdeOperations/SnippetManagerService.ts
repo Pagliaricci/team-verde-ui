@@ -11,6 +11,7 @@ import {TestCaseResult} from "../queries.tsx";
 import {TestResponse} from "../../hooks/TestResponse.ts";
 import {UpdateSnippetResponse} from "../../hooks/UpdateSnippetResponse.ts";
 import { FileType } from "../../types/FileType.ts";
+import api from "./api.ts";
 
 const DELAY: number = 1000;
 
@@ -87,11 +88,7 @@ export class SnippetManagerService {
             if (!token) {
                 throw new Error("No token found");
             }
-            await axios.delete(`https://teamverde.westus2.cloudapp.azure.com/snippets/delete/${id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            await api.delete(`delete/${id}`);
             return `Successfully deleted snippet of id: ${id}`;
         } catch (error) {
             console.error('Error deleting snippet:', error);
@@ -107,21 +104,12 @@ export class SnippetManagerService {
             }
 
             // Realizar la solicitud POST al backend
-            const response = await axios.post(
-                `https://teamverde.westus2.cloudapp.azure.com/snippets/share`,
-                { snippetId, userId }, // Cuerpo de la solicitud
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            // Notificar éxito al usuario
+            const response = await api.post(
+                `snippets/share`,
+                { snippetId, userId });
             toast.success("Snippet shared successfully!");
             return response.data; // Retorna el objeto de respuesta desde el backend
         } catch (error) {
-            // Manejo de errores
             if (axios.isAxiosError(error)) {
                 if (error.response?.status === 403) {
                     toast.error("You do not have permission to share this snippet.");
@@ -143,11 +131,7 @@ export class SnippetManagerService {
         if (!token) {
             throw new Error("No token found");
         }
-        const response = await axios.get('https://teamverde.westus2.cloudapp.azure.com/snippets/getFormattingRules', {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        const response = await api.get('snippets/getFormattingRules');
         return response.data as Promise<Rule[]>;
     }
 
@@ -158,11 +142,7 @@ export class SnippetManagerService {
             throw new Error("No token found");
         }
 
-        return await axios.post('https://teamverde.westus2.cloudapp.azure.com/snippets/modifyFormattingRules', newRules, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        }).then(response => response.data);
+        return await api.post('snippets/modifyFormattingRules', newRules).then(response => response.data);
     }
 
     async getLintingRules(): Promise<Rule[]> {
@@ -172,11 +152,7 @@ export class SnippetManagerService {
         if (!token) {
             throw new Error("No token found");
         }
-        const response = await axios.get('https://teamverde.westus2.cloudapp.azure.com/snippets/getLintingRules', {
-            headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+        const response = await api.get('snippets/getLintingRules');
         console.log("Getting linting rules checkpoint 3, response: ", response.data);
         return response.data as Promise<Rule[]>;
     }
@@ -188,11 +164,7 @@ export class SnippetManagerService {
             throw new Error("No token found");
         }
 
-        return await axios.post('https://teamverde.westus2.cloudapp.azure.com/snippets/modifyLintingRules', newRules, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        }).then(response => response.data);
+        return await api.post('snippets/modifyLintingRules', newRules).then(response => response.data);
     }
     async formatSnippet(snippetId: string, snippetContent: string): Promise<string> {
         const token = localStorage.getItem("token");
@@ -228,11 +200,7 @@ export class SnippetManagerService {
         if (!snippetId) {
             throw new Error("SnippetId is needed to show snippet's tests");
         }
-        const response = await axios.get(`https://teamverde.westus2.cloudapp.azure.com/snippets/api/test/snippet/${snippetId}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        const response = await api.get(`snippets/api/test/snippet/${snippetId}`);
         return Array.isArray(response.data) ? response.data : [];
     }
 
@@ -246,14 +214,9 @@ export class SnippetManagerService {
             throw new Error("SnippetId is needed to post a test case");
         }
         console.log("mandando al backend los siguientes datos: ", testCase, snippetId);
-        const response = await axios.post<TestResponse>(
-            `https://teamverde.westus2.cloudapp.azure.com/snippets/api/test/snippet/${snippetId}`,
-            testCase,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
+        const response = await api.post<TestResponse>(
+            `snippets/api/test/snippet/${snippetId}`,
+            testCase
         );
         console.log(response.data);
         return response.data;
@@ -267,11 +230,7 @@ export class SnippetManagerService {
         if (!testId) {
             throw new Error("TestCaseId is needed to remove a test case");
         }
-        const response = await axios.delete(`https://teamverde.westus2.cloudapp.azure.com/snippets/api/test/${testId}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        const response = await api.delete(`snippets/api/test/${testId}`);
         console.log(`test with id: ${testId} removed`)
         return response.data;
     }
@@ -287,14 +246,9 @@ export class SnippetManagerService {
             throw new Error("Test ID is required to run a test");
         }
 
-        const response = await axios.post(
-            `https://teamverde.westus2.cloudapp.azure.com/snippets/api/test/${testCase.id}/run`,
-            { input: testCase.input, output: testCase.output },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
+        const response = await api.post(
+            `snippets/api/test/${testCase.id}/run`,
+            { input: testCase.input, output: testCase.output }
         );
 
         console.log(response.data as TestCaseResult)
@@ -309,16 +263,8 @@ export class SnippetManagerService {
         }
         console.log("Running all tests for snippet:", snippetId);
         try {
-            const response = await axios.post(
-                `https://teamverde.westus2.cloudapp.azure.com/snippets/api/test/${snippetId}/all`,
-                {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
+            const response = await api.post(
+                `snippets/api/test/${snippetId}/all`);
 
             if (response.status === 200) {
                 console.log("response", response.data);

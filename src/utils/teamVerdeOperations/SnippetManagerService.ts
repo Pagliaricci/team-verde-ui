@@ -238,12 +238,14 @@ export class SnippetManagerService {
 
     async postTestCase(testCase: Partial<TestCase>, snippetId: string): Promise<TestResponse> {
         const token = localStorage.getItem("token");
+        console.log("Posting test case:", testCase);
         if (!token) {
             throw new Error("No token found");
         }
         if (!snippetId) {
             throw new Error("SnippetId is needed to post a test case");
         }
+        console.log("mandando al backend los siguientes datos: ", testCase, snippetId);
         const response = await axios.post<TestResponse>(
             `https://teamverde.westus2.cloudapp.azure.com/snippets/api/test/snippet/${snippetId}`,
             testCase,

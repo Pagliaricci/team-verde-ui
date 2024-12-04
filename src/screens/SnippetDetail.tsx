@@ -120,25 +120,20 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
 
             console.log("Test errors response:", testErrors); // Debug response
 
-            if (Array.isArray(testErrors)) {
-                if (testErrors.length === 0) {
-                    setTestResults("All tests passed successfully.");
-                } else {
-                    setTestResults(
-                        `Some tests failed:\n${testErrors.map(
-                            (error) => `Test: ${error.name} - ${error.error}`
-                        ).join("\n")}`
-                    );
-                }
-            } else if (typeof testErrors === "object" && testErrors !== null) {
+            if (typeof testErrors === "object" && testErrors !== null) {
+                // Procesar los errores para mostrar una lista
                 const failedTests = Object.entries(testErrors)
-                    .filter(([testName, errors]) => errors.length > 0)
-                    .map(([testName, errors]) => `Test: ${testName} - ${errors.join(", ")}`)
-                    .join("\n");
+                    .filter(([_, errors]) => Array.isArray(errors) && errors.length > 0)
+                    .map(([testName, errors]) => ({
+                        testName,
+                        errors,
+                    }));
 
-                if (failedTests) {
-                    setTestResults(`Some tests failed:\n${failedTests}`);
+                if (failedTests.length > 0) {
+                    setErrors(failedTests);
+                    setTestResults(`Some tests failed. Check errors below.`);
                 } else {
+                    setErrors([]);
                     setTestResults("All tests passed successfully.");
                 }
             } else {
@@ -173,7 +168,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
     return (
         <Box p={4} minWidth={"60vw"}>
             <Box width={"100%"} p={2} display={"flex"} justifyContent={"flex-end"}>
-                <CloseIcon style={{cursor: "pointer"}} onClick={handleCloseModal}/>
+                <CloseIcon style={{cursor: "pointer"}} onClick={handleCloseModal} />
             </Box>
             {status && (
                 <Box mt={2}>
@@ -185,7 +180,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                     <Typography fontWeight={"bold"} mb={2} variant="h4">
                         Loading...
                     </Typography>
-                    <CircularProgress/>
+                    <CircularProgress />
                 </>
             ) : (
                 <>
@@ -195,25 +190,25 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                     <Box display="flex" flexDirection="row" gap="8px" padding="8px">
                         <Tooltip title={"Share"}>
                             <IconButton onClick={() => setShareModalOpened(true)}>
-                                <Share/>
+                                <Share />
                             </IconButton>
                         </Tooltip>
                         <Tooltip title={"Test"}>
                             <IconButton onClick={() => setTestModalOpened(true)}>
-                                <BugReport/>
+                                <BugReport />
                             </IconButton>
                         </Tooltip>
-                        <DownloadButton snippet={snippet}/>
+                        <DownloadButton snippet={snippet} />
                         <Tooltip title={"Format"}>
                             <IconButton
                                 onClick={() => {
                                     if (snippet?.id) {
-                                        formatSnippet({id: snippet.id, content: code});
+                                        formatSnippet({ id: snippet.id, content: code });
                                     }
                                 }}
                                 disabled={isFormatLoading}
                             >
-                                <ReadMoreIcon/>
+                                <ReadMoreIcon />
                             </IconButton>
                         </Tooltip>
                         <Tooltip title={"Save changes"}>
@@ -222,12 +217,12 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                                 onClick={handleUpdateSnippet}
                                 disabled={isUpdateSnippetLoading || snippet?.content === code}
                             >
-                                <Save/>
+                                <Save />
                             </IconButton>
                         </Tooltip>
                         <Tooltip title={"Delete"}>
                             <IconButton onClick={() => setDeleteConfirmationModalOpen(true)}>
-                                <Delete color={"error"}/>
+                                <Delete color={"error"} />
                             </IconButton>
                         </Tooltip>
                     </Box>
@@ -255,11 +250,30 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                     </Box>
                     <Box pt={1} flex={1} marginTop={2}>
                         <Alert severity="info">Output</Alert>
-                        <SnippetExecution/>
+                        <SnippetExecution />
                     </Box>
                     {testResults && (
                         <Box pt={2}>
                             <Alert severity="info">{testResults}</Alert>
+                        </Box>
+                    )}
+                    {errors.length > 0 && (
+                        <Box pt={2}>
+                            <Alert severity="error">
+                                <Typography fontWeight="bold">Test Errors:</Typography>
+                                <ul>
+                                    {errors.map(({ testName, errors }, index) => (
+                                        <li key={index}>
+                                            <strong>{testName}:</strong>
+                                            <ul>
+                                                {errors.map((error, idx) => (
+                                                    <li key={idx}>{error}</li>
+                                                ))}
+                                            </ul>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </Alert>
                         </Box>
                     )}
                 </>
@@ -283,4 +297,5 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
             />
         </Box>
     );
+
 };

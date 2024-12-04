@@ -1,8 +1,8 @@
-import {useEffect, useState} from "react";
-import {TestCase} from "../../types/TestCase.ts";
-import {Autocomplete, Box, Button, Chip, TextField, Typography, CircularProgress} from "@mui/material";
-import {BugReport, Delete, Save, CheckCircle, Error} from "@mui/icons-material";
-import {useTestSnippet} from "../../utils/queries.tsx";
+import { useEffect, useState } from "react";
+import { TestCase } from "../../types/TestCase.ts";
+import { Autocomplete, Box, Button, Chip, TextField, Typography, CircularProgress } from "@mui/material";
+import { BugReport, Delete, Save, CheckCircle, Error } from "@mui/icons-material";
+import { useTestSnippet } from "../../utils/queries.tsx";
 
 type TabPanelProps = {
     index: number;
@@ -12,7 +12,7 @@ type TabPanelProps = {
     removeTestCase?: (testIndex: string) => void;
 }
 
-export const TabPanel = ({value, index, test: initialTest, setTestCase, removeTestCase}: TabPanelProps) => {
+export const TabPanel = ({ value, index, test: initialTest, setTestCase, removeTestCase }: TabPanelProps) => {
     const [testData, setTestData] = useState<Partial<TestCase> | undefined>(initialTest);
     const { mutateAsync: testSnippet } = useTestSnippet();
     const [testStatus, setTestStatus] = useState<"loading" | "passed" | "failed" | null>(null);
@@ -47,14 +47,14 @@ export const TabPanel = ({value, index, test: initialTest, setTestCase, removeTe
             hidden={value !== index}
             id={`vertical-tabpanel-${index}`}
             aria-labelledby={`vertical-tab-${index}`}
-            style={{width: '100%', height: '100%'}}
+            style={{ width: '100%', height: '100%' }}
         >
             {value === index && (
-                <Box sx={{px: 3}} display="flex" flexDirection="column" gap={2}>
+                <Box sx={{ px: 3 }} display="flex" flexDirection="column" gap={2}>
                     <Box display="flex" flexDirection="column" gap={1}>
                         <Typography fontWeight="bold">Name</Typography>
                         <TextField size="small" value={testData?.name}
-                                   onChange={(e) => setTestData({...testData, name: e.target.value})}/>
+                                   onChange={(e) => setTestData({ ...testData, name: e.target.value })} />
                     </Box>
                     <Box display="flex" flexDirection="column" gap={1}>
                         <Typography fontWeight="bold">Input</Typography>
@@ -64,10 +64,10 @@ export const TabPanel = ({value, index, test: initialTest, setTestCase, removeTe
                             id="tags-filled"
                             freeSolo
                             value={testData?.input ?? []}
-                            onChange={(_, value) => setTestData({...testData, input: value})}
+                            onChange={(_, value) => setTestData({ ...testData, input: value })}
                             renderTags={(value: readonly string[], getTagProps) =>
                                 value.map((option: string, index: number) => (
-                                    <Chip variant="outlined" label={option} {...getTagProps({index})} />
+                                    <Chip variant="outlined" label={option} {...getTagProps({ index })} />
                                 ))
                             }
                             renderInput={(params) => (
@@ -86,10 +86,10 @@ export const TabPanel = ({value, index, test: initialTest, setTestCase, removeTe
                             id="tags-filled"
                             freeSolo
                             value={testData?.output ?? []}
-                            onChange={(_, value) => setTestData({...testData, output: value})}
+                            onChange={(_, value) => setTestData({ ...testData, output: value })}
                             renderTags={(value: readonly string[], getTagProps) =>
                                 value.map((option: string, index: number) => (
-                                    <Chip variant="outlined" label={option} {...getTagProps({index})} />
+                                    <Chip variant="outlined" label={option} {...getTagProps({ index })} />
                                 ))
                             }
                             renderInput={(params) => (

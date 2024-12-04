@@ -1,6 +1,7 @@
-import { UpdateSnippetResponse } from "../hooks/UpdateSnippetResponse.ts";
+import { UpdateSnippetResponse } from "./UpdateSnippetResponse.ts";
 import {UpdateSnippet} from "../utils/snippet.ts";
 import axios from "axios";
+import {SnippetManagerService} from "../utils/teamVerdeOperations/SnippetManagerService.ts";
 
 export const updateSnippetFunction = async (
     id: string,
@@ -14,6 +15,7 @@ export const updateSnippetFunction = async (
                 "Content-Type": "application/json",
             },
         });
+        await new SnippetManagerService().runAllTests(id);
         return response.data as UpdateSnippetResponse;
     } catch (error: any) {
         console.error(error);

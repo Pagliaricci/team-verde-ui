@@ -307,7 +307,7 @@ export class SnippetManagerService {
         if (!token) {
             throw new Error("No token found");
         }
-
+        console.log("Running all tests for snippet:", snippetId);
         try {
             const response = await axios.post(
                 `https://teamverde.westus2.cloudapp.azure.com/snippets/api/test/${snippetId}/all`,
@@ -321,6 +321,7 @@ export class SnippetManagerService {
             );
 
             if (response.status === 200) {
+                console.log("response", response.data);
                 return response.data; // Ensure this matches the backend response
             } else {
                 throw new Error(`Unexpected response status: ${response.status}`);

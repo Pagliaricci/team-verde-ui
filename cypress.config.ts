@@ -10,7 +10,7 @@ export default defineConfig({
       // Add environment variables to the Cypress config
       config.env = {
         ...config.env,
-        VITE_FRONTEND_URL: process.env.VITE_FRONTEND_URL,
+        FRONTEND_URL: process.env.FRONTEND_URL,
         VITE_BACKEND_URL: process.env.VITE_BACKEND_URL,
         VITE_AUTH0_USERNAME: process.env.VITE_AUTH0_USERNAME,
         VITE_AUTH0_PASSWORD: process.env.VITE_AUTH0_PASSWORD,
@@ -21,6 +21,6 @@ export default defineConfig({
       return config;
     },
     experimentalStudio: true,
-    baseUrl: process.env.VITE_FRONTEND_URL || "http://localhost:5173/", // Fallback to default URL
+    baseUrl: process.env.FRONTEND_URL || "http://localhost:5173/", // Fallback to default URL
   },
 });

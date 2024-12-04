@@ -1,13 +1,9 @@
-import axios from 'axios';
 import { Snippet } from '../utils/snippet.ts';
+import api from "../utils/teamVerdeOperations/api.ts";
 
 export const fetchAllUserSnippets = async (id: string, token: string): Promise<Snippet[] | []> => {
     try {
-        const response = await axios.get('https://teamverde.westus2.cloudapp.azure.com/snippets/', {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        const response = await api.get('snippets/');
         return response.data.map((element: { snippet: { id: string; name: string; languageName: string; languageExtension: string; conformance: string; userId: string; }; author: string; }) => {
             return {
                 id: element.snippet.id,

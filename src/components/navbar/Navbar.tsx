@@ -25,6 +25,7 @@ export const Navbar = () => {
     const navigate = useNavigate();
     return (
         <AppBar position="static" elevation={0}>
+            <LogoutButton></LogoutButton>
             <Container maxWidth="xl">
                 <Toolbar disableGutters sx={{display: "flex", gap: "24px"}}>
                     <Typography
@@ -62,7 +63,6 @@ export const Navbar = () => {
                             </Button>
                         ))}
                     </Box>
-                    <LogoutButton></LogoutButton>
                 </Toolbar>
             </Container>
         </AppBar>

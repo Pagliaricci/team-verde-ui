@@ -1,24 +1,24 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import { Button } from "@mui/material";
+import {Button} from "@mui/material";
 
-const Logout = () => {
+const LogoutButton = () => {
     const { logout } = useAuth0();
 
-const handleLogout = () => {
-    logout({ logoutParams: { returnTo: window.location.origin } })
-        .then(() => {
-            console.log("Logout successful");
-        })
-        .catch((error) => {
-            console.error("Logout failed", error);
-        });
-};
-
     return (
-        <Button sx={{backgroundColor:"Red"}} onClick={handleLogout}>
-            Cerrar sesión
+        <Button sx={{
+            my: 2,
+            color: 'white',
+            display: 'flex',
+            justifyContent: "center",
+            gap: "4px",
+            backgroundColor: 'primary.light',
+            "&:hover": {
+                backgroundColor: 'primary.dark'
+            }
+        }} onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>
+            Log Out
         </Button>
     );
 };
 
-export default Logout;
+export default LogoutButton;

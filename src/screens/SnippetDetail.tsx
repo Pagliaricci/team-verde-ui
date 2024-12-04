@@ -20,10 +20,9 @@ import {
     useShareSnippet,
 } from "../utils/queries.tsx";
 import { Snippet } from "../utils/snippet.ts";
-import { SnippetExecution } from "./SnippetExecution.tsx";
 import { DeleteConfirmationModal } from "../components/snippet-detail/DeleteConfirmationModal.tsx";
 import { ShareSnippetModal } from "../components/snippet-detail/ShareSnippetModal.tsx";
-import { TestSnippetModal } from "../components/snippet-detail/TestSnippetModal.tsx";
+import { TestSnippetModal } from "../components/snippet-test/TestSnippetModal.tsx";
 import {
     BugReport,
     Delete,

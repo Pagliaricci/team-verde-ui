@@ -19,6 +19,7 @@ export const updateSnippetFunction = async (
         return response.data as UpdateSnippetResponse;
     } catch (error: any) {
         console.error(error);
+
         throw new Error(error.response?.data?.message || "Error updating snippet");
     }
 };

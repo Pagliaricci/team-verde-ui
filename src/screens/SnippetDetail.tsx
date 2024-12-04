@@ -20,6 +20,7 @@ import {
     useShareSnippet,
 } from "../utils/queries.tsx";
 import { Snippet } from "../utils/snippet.ts";
+import { SnippetExecution } from "./SnippetExecution.tsx";
 import { DeleteConfirmationModal } from "../components/snippet-detail/DeleteConfirmationModal.tsx";
 import { ShareSnippetModal } from "../components/snippet-detail/ShareSnippetModal.tsx";
 import { TestSnippetModal } from "../components/snippet-test/TestSnippetModal.tsx";
@@ -80,7 +81,7 @@ const DownloadButton = ({ snippet }: { snippet?: Snippet }) => {
 };
 
 export const SnippetDetail = (props: SnippetDetailProps) => {
-    const { id, handleCloseModal } = props;
+    const {id, handleCloseModal} = props;
     const [code, setCode] = useState("");
     const [errors, setErrors] = useState<string[]>([]);
     const [testResults, setTestResults] = useState<string | null>(null);
@@ -91,15 +92,15 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
     const [runSnippet, setRunSnippet] = useState(false);
     const [status, setStatus] = useState<{ message: string; success: boolean } | null>(null);
 
-    const { data: snippet, isLoading } = useGetSnippetById(id);
-    const { mutate: shareSnippet, isLoading: loadingShare } = useShareSnippet();
-    const { mutate: formatSnippet, isLoading: isFormatLoading, data: formatSnippetData } =
+    const {data: snippet, isLoading} = useGetSnippetById(id);
+    const {mutate: shareSnippet, isLoading: loadingShare} = useShareSnippet();
+    const {mutate: formatSnippet, isLoading: isFormatLoading, data: formatSnippetData} =
         useFormatSnippet();
-    const { mutate: updateSnippet, isLoading: isUpdateSnippetLoading } =
+    const {mutate: updateSnippet, isLoading: isUpdateSnippetLoading} =
         useUpdateSnippetById({
             onSuccess: () => queryClient.invalidateQueries(["snippet", id]),
         });
-    const { mutateAsync: runAllSnippetTests } = useRunAllSnippetTests(id);
+    const {mutateAsync: runAllSnippetTests} = useRunAllSnippetTests(id);
 
     useEffect(() => {
         if (snippet?.content) {
@@ -113,74 +114,34 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
         }
     }, [formatSnippetData]);
 
-    const handleRunAllTestsToast = async () => {
-        try {
-            const testErrors = await runAllSnippetTests(id);
-            console.log("Test errors response:", testErrors); // Debug response
-            if (Array.isArray(testErrors)) {
-                if (testErrors.length === 0) {
-                    setTestResults("All tests passed successfully.");
-                } else {
-                    setTestResults(
-                        `Some tests failed:\n${testErrors.map(
-                            (error) => `Test: ${error.name} - ${error.error}`
-                        ).join("\n")}`
-                    );
-                }
-            } else if (typeof testErrors === "object" && testErrors !== null) {
-                const failedTests = Object.entries(testErrors)
-                    .filter(([testName, errors]) => errors.length > 0)
-                    .map(([testName, errors]) => `Test: ${testName} - ${errors.join(", ")}`)
-                    .join("\n");
-                if (failedTests) {
-                    setTestResults(`Some tests failed:\n${failedTests}`);
-                } else {
-                    setTestResults("All tests passed successfully.");
-                }
-            } else {
-                setTestResults("Unexpected test results format.");
-                console.error("Unexpected test results format:", testErrors);
-            }
-        } catch (err) {
-            setTestResults("Failed to run all tests. Please try again later.");
-            console.error("Error running tests:", err);
-        }
-    };
-
     const handleUpdateSnippet = async () => {
-        setErrors([]);
-        setTestResults(null);
-        try {
-            const response = await updateSnippet({ id: id, updateSnippet: { content: code } });
+        if (!snippet || !snippet.id) return;
 
-            // Show the update response message
-            setStatus({ message: response.message, success: response.message === "Snippet updated" });
-
-            if (response.message === "Snippet updated") {
-                // Update snippet content if update is successful
-                setCode(response.updatedSnippet?.content || code);
-
-                // Run tests only after the snippet update is successful
-                setTimeout(() => {
-                    handleRunAllTestsToast();
-                }, 1000); // Add a slight delay to ensure the update is complete before running tests
-            } else {
-                setStatus({ message: response.message, success: false });
+        updateSnippet(
+            {id: snippet.id, updateSnippet: {content: code}},
+            {
+                onSuccess: (response) => {
+                    setStatus({message: response.message, success: response.message === "Snippet updated"});
+                    if (response.message === "Snippet updated") {
+                        setCode(response.updatedSnippet?.content || code);
+                        setTimeout(() => setStatus(null), 1000);
+                    }
+                },
+                onError: (error) => {
+                    setStatus({message: error.message, success: false});
+                },
             }
-        } catch (err) {
-            setStatus({ message: "Error updating snippet. Please try again.", success: false });
-            console.error("Update error:", err);
-        }
+        );
     };
 
     async function handleShareSnippet(userId: string) {
-        shareSnippet({ snippetId: id, userId });
+        shareSnippet({snippetId: id, userId});
     }
 
     return (
         <Box p={4} minWidth={"60vw"}>
             <Box width={"100%"} p={2} display={"flex"} justifyContent={"flex-end"}>
-                <CloseIcon style={{ cursor: "pointer" }} onClick={handleCloseModal} />
+                <CloseIcon style={{cursor: "pointer"}} onClick={handleCloseModal}/>
             </Box>
             {status && (
                 <Box mt={2}>
@@ -192,7 +153,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                     <Typography fontWeight={"bold"} mb={2} variant="h4">
                         Loading...
                     </Typography>
-                    <CircularProgress />
+                    <CircularProgress/>
                 </>
             ) : (
                 <>
@@ -202,30 +163,25 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                     <Box display="flex" flexDirection="row" gap="8px" padding="8px">
                         <Tooltip title={"Share"}>
                             <IconButton onClick={() => setShareModalOpened(true)}>
-                                <Share />
+                                <Share/>
                             </IconButton>
                         </Tooltip>
                         <Tooltip title={"Test"}>
                             <IconButton onClick={() => setTestModalOpened(true)}>
-                                <BugReport />
+                                <BugReport/>
                             </IconButton>
                         </Tooltip>
-                        <DownloadButton snippet={snippet} />
-                        <Tooltip title={runSnippet ? "Stop run" : "Run"}>
-                            <IconButton onClick={() => setRunSnippet(!runSnippet)}>
-                                {runSnippet ? <StopRounded /> : <PlayArrow />}
-                            </IconButton>
-                        </Tooltip>
+                        <DownloadButton snippet={snippet}/>
                         <Tooltip title={"Format"}>
                             <IconButton
                                 onClick={() => {
                                     if (snippet?.id) {
-                                        formatSnippet({ id: snippet.id, content: code });
+                                        formatSnippet({id: snippet.id, content: code});
                                     }
                                 }}
                                 disabled={isFormatLoading}
                             >
-                                <ReadMoreIcon />
+                                <ReadMoreIcon/>
                             </IconButton>
                         </Tooltip>
                         <Tooltip title={"Save changes"}>
@@ -234,52 +190,64 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                                 onClick={handleUpdateSnippet}
                                 disabled={isUpdateSnippetLoading || snippet?.content === code}
                             >
-                                <Save />
+                                <Save/>
                             </IconButton>
                         </Tooltip>
                         <Tooltip title={"Delete"}>
                             <IconButton onClick={() => setDeleteConfirmationModalOpen(true)}>
-                                <Delete />
+                                <Delete color={"error"}/>
                             </IconButton>
                         </Tooltip>
                     </Box>
-
-                    <Editor
-                        value={code}
-                        onValueChange={setCode}
-                        highlight={(code) => highlight(code, languages.js)}
-                        padding={10}
-                        style={{
-                            fontFamily: '"Fira code", "Fira Mono", monospace',
-                            fontSize: 12,
-                            minHeight: "60vh",
-                            backgroundColor: "#282c34",
-                            color: "#f8f8f2",
-                        }}
-                    />
-
+                    <Box display={"flex"} gap={2}>
+                        <Box
+                            flex={1}
+                            height={"fit-content"}
+                            overflow={"none"}
+                            minHeight={"500px"}
+                            bgcolor={"black"}
+                            color={"white"}
+                        >
+                            <Editor
+                                value={code}
+                                padding={10}
+                                onValueChange={(code) => setCode(code)}
+                                highlight={(code) => highlight(code, languages.js, "javascript")}
+                                style={{
+                                    minHeight: "500px",
+                                    fontFamily: "monospace",
+                                    fontSize: 17,
+                                }}
+                            />
+                        </Box>
+                    </Box>
+                    <Box pt={1} flex={1} marginTop={2}>
+                        <Alert severity="info">Output</Alert>
+                        <SnippetExecution/>
+                    </Box>
                     {testResults && (
-                        <Typography variant="h5" mt={2}>
-                            Test Results: {testResults}
-                        </Typography>
+                        <Box pt={2}>
+                            <Alert severity="info">{testResults}</Alert>
+                        </Box>
                     )}
                 </>
             )}
-            <TestSnippetModal
-                open={testModalOpened}
-                onClose={() => setTestModalOpened(false)}
-                onRunTests={handleRunAllTestsToast}
-            />
             <ShareSnippetModal
+                loading={loadingShare || isLoading}
                 open={shareModalOpened}
                 onClose={() => setShareModalOpened(false)}
                 onShare={handleShareSnippet}
+            />
+            <TestSnippetModal
+                open={testModalOpened}
+                onClose={() => setTestModalOpened(false)}
                 snippetId={id}
             />
             <DeleteConfirmationModal
                 open={deleteConfirmationModalOpen}
                 onClose={() => setDeleteConfirmationModalOpen(false)}
-                snippetId={id}
+                id={snippet?.id || ""}
+                setCloseDetails={handleCloseModal}
             />
         </Box>
     );

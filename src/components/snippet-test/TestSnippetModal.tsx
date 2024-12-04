@@ -30,8 +30,8 @@ export const TestSnippetModal = ({ open, onClose, snippetId }: TestSnippetModalP
     const handleAddTestCase = async (testCase: Partial<TestCase>) => {
         const sanitizedTestCase = {
             ...testCase,
-            input: testCase.input && testCase.input.length > 0 ? testCase.input : [],
-            output: testCase.output && testCase.output.length > 0 ? testCase.output : [],
+            input: testCase.input || [],
+            output: testCase.output || [],
         };
 
         try {

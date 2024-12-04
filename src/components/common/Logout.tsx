@@ -5,15 +5,10 @@ const LogoutButton = () => {
     const { logout } = useAuth0();
 
     return (
-        <Button sx={{
-            my: 2,
-            color: 'white',
-            display: 'flex',
-            justifyContent: "center",
-            gap: "4px",
-            backgroundColor: 'primary.light',
+        <Button sx={{my: 2, color: 'White', display: 'flex', justifyContent: "center", gap: "6px",
+            backgroundColor: 'red',
             "&:hover": {
-                backgroundColor: 'primary.dark'
+                backgroundColor: 'darkred'
             }
         }} onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>
             Log Out

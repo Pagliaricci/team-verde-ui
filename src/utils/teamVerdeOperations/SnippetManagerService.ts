@@ -88,7 +88,7 @@ export class SnippetManagerService {
             if (!token) {
                 throw new Error("No token found");
             }
-            await api.delete(`delete/${id}`);
+            await api.delete(`snippets/delete/${id}`);
             return `Successfully deleted snippet of id: ${id}`;
         } catch (error) {
             console.error('Error deleting snippet:', error);

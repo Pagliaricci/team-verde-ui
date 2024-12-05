@@ -97,9 +97,10 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
     const {mutate: shareSnippet, isLoading: loadingShare} = useShareSnippet();
     const {mutate: formatSnippet, isLoading: isFormatLoading, data: formatSnippetData} =
         useFormatSnippet();
-    const { mutateAsync: updateSnippet } = useUpdateSnippetById({
-    onSuccess: () => queryClient.invalidateQueries(["snippet", id]),
-});
+    const {mutateAsync: updateSnippet, isLoading: isUpdateSnippetLoading} =
+        useUpdateSnippetById({
+            onSuccess: () => queryClient.invalidateQueries(["snippet", id]),
+        });
     const {mutateAsync: runAllSnippetTests} = useRunAllSnippetTests(id);
 
     useEffect(() => {

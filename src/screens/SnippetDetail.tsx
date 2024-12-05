@@ -116,7 +116,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
 
     async function handleRunAllTestsToast() {
         try {
-            const testErrors = await runAllSnippetTests(id);
+            const testErrors = runAllSnippetTests();
 
             console.log("Test errors response:", testErrors); // Debug response
 

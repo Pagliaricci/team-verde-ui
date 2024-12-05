@@ -268,6 +268,7 @@ export class SnippetManagerService {
 
             if (response.status === 200) {
                 console.log("response", response.data);
+                localStorage.setItem("allTestResults", JSON.stringify(response.data));
                 return response.data; // Ensure this matches the backend response
             } else {
                 throw new Error(`Unexpected response status: ${response.status}`);

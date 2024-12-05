@@ -35,6 +35,7 @@ import {
 } from "@mui/icons-material";
 import ReadMoreIcon from "@mui/icons-material/ReadMore";
 import { queryClient } from "../App.tsx";
+import {UpdateSnippetResponse} from "../hooks/UpdateSnippetResponse.ts";
 
 type SnippetDetailProps = {
     id: string;
@@ -96,10 +97,9 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
     const {mutate: shareSnippet, isLoading: loadingShare} = useShareSnippet();
     const {mutate: formatSnippet, isLoading: isFormatLoading, data: formatSnippetData} =
         useFormatSnippet();
-    const {mutate: updateSnippet, isLoading: isUpdateSnippetLoading} =
-        useUpdateSnippetById({
-            onSuccess: () => queryClient.invalidateQueries(["snippet", id]),
-        });
+    const { mutateAsync: updateSnippet } = useUpdateSnippetById({
+    onSuccess: () => queryClient.invalidateQueries(["snippet", id]),
+});
     const {mutateAsync: runAllSnippetTests} = useRunAllSnippetTests(id);
 
     useEffect(() => {
@@ -114,52 +114,60 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
         }
     }, [formatSnippetData]);
 
-    async function handleRunAllTestsToast() {
-        try {
-            const testErrors = runAllSnippetTests();
-
-            console.log("Test errors response:", testErrors); // Debug response
-
-            if (typeof testErrors === "object" && testErrors !== null) {
-                // Procesar los errores para mostrar una lista
-                const failedTests = Object.entries(testErrors)
-                    .filter(([_, errors]) => Array.isArray(errors) && errors.length > 0)
-                    .map(([testName, errors]) => ({
-                        testName,
-                        errors,
-                    }));
-
-                if (failedTests.length > 0) {
-                    setErrors(failedTests);
-                    setTestResults(`Some tests failed. Check errors below.`);
-                } else {
-                    setErrors([]);
-                    setTestResults("All tests passed successfully.");
-                }
-            } else {
-                setTestResults("Unexpected test results format.");
-                console.error("Unexpected test results format:", testErrors);
-            }
-        } catch (err) {
-            setTestResults("Failed to run all tests. Please try again later.");
-            console.error("Error running tests:", err);
-        }
-    }
-
     async function handleUpdateSnippet() {
-        setErrors([]);
-        setTestResults(null);
+    setErrors([]);
+    setTestResults(null);
 
-        try {
-            updateSnippet({id: id, updateSnippet: {content: code}});
+    try {
+        // Update the snippet
+        const response: UpdateSnippetResponse = await updateSnippet({ id: id, updateSnippet: { content: code } });
+
+        // Handle the response from the update
+        setStatus({ message: response.message, success: response.message === "Snippet updated" });
+        if (response.message === "Snippet updated") {
+            setCode(response.updatedSnippet?.content || code);
+            setTimeout(() => setStatus(null), 1000);
 
             // Run tests after updating snippet
             await handleRunAllTestsToast();
-        } catch (err) {
-            setTestResults("Error updating snippet. Please try again.");
-            console.error("Update error:", err);
         }
+    } catch (err) {
+        setTestResults("Error updating snippet. Please try again.");
+        console.error("Update error:", err);
     }
+}
+
+async function handleRunAllTestsToast() {
+    try {
+        const testErrors = await runAllSnippetTests();
+        const results = localStorage.getItem("allTestResults");
+        console.log("Test errors response:", testErrors); // Debug response
+
+        if (results) {
+            const parsedResults = JSON.parse(results);
+            const failedTests = Object.entries(parsedResults)
+                .filter(([_, errors]) => Array.isArray(errors) && errors.length > 0)
+                .map(([testName, errors]) => ({
+                    testName,
+                    errors,
+                }));
+
+            if (failedTests.length > 0) {
+                setErrors(failedTests);
+                setTestResults(`Some tests failed. Check errors below.`);
+            } else {
+                setErrors([]);
+                setTestResults("All tests passed successfully.");
+            }
+        } else {
+            setTestResults("Unexpected test results format.");
+            console.error("Unexpected test results format:", testErrors);
+        }
+    } catch (err) {
+        setTestResults("Failed to run all tests. Please try again later.");
+        console.error("Error running tests:", err);
+    }
+}
 
     async function handleShareSnippet(userId: string) {
         shareSnippet({snippetId: id, userId});

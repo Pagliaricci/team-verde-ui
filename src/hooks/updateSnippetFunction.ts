@@ -1,7 +1,7 @@
 import { UpdateSnippetResponse } from "./UpdateSnippetResponse.ts";
 import {UpdateSnippet} from "../utils/snippet.ts";
-import axios from "axios";
 import {SnippetManagerService} from "../utils/teamVerdeOperations/SnippetManagerService.ts";
+import api from "../utils/teamVerdeOperations/api.ts";
 
 export const updateSnippetFunction = async (
     id: string,
@@ -9,12 +9,7 @@ export const updateSnippetFunction = async (
     token: string
 ): Promise<UpdateSnippetResponse> => {
     try {
-        const response = await axios.put(`https://teamverde.westus2.cloudapp.azure.com/snippets/update/${id}`, updatedSnippet, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await api.put(`snippets/update/${id}`, updatedSnippet);
         await new SnippetManagerService().runAllTests(id);
         return response.data as UpdateSnippetResponse;
     } catch (error: any) {
